@@ -1,0 +1,50 @@
+name: dalbit_suwon
+description: "수원화성 야간 데이트 코스 앱 — 달빛수원"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # 상태관리
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # 라우팅
+  go_router: ^14.0.0
+
+  # 모델 (불변 객체 + JSON 직렬화)
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # 이미지
+  cached_network_image: ^3.4.1
+
+  # 폰트 (Manrope, Hanken Grotesk)
+  google_fonts: ^6.2.1
+
+  # 외부 지도 딥링크
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # 코드 생성
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.6.1
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+    - assets/images/
