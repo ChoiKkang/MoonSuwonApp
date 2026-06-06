@@ -194,6 +194,9 @@ fabric.properties
 # OMC (oh-my-claudecode) state files
 .omc/
 
+# IntelliJ / Android Studio project folder
+.idea/
+
 # Flutter build artifacts
 *.flutter-plugins
 flutter_export_environment.sh
