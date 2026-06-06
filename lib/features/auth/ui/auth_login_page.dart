@@ -21,7 +21,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
     if (mounted) {
       setState(() => loading = false);
-      context.pop();
+      context.go('/');
     }
   }
 
@@ -30,7 +30,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     await ref.read(authNotifierProvider.notifier).loginWithNaverAsync();
     if (mounted) {
       setState(() => loading = false);
-      context.pop();
+      context.go('/');
     }
   }
 
@@ -39,7 +39,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     await ref.read(authNotifierProvider.notifier).loginWithAppleAsync();
     if (mounted) {
       setState(() => loading = false);
-      context.pop();
+      context.go('/');
     }
   }
 
@@ -107,7 +107,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
               ),
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.pop(),
+                onTap: () => context.go('/'),
                 child: Text(
                   '로그인 없이 둘러보기',
                   style: AppTextStyles.labelMd

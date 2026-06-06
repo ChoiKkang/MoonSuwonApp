@@ -9,7 +9,7 @@ import 'package:dalbit_suwon/features/spot/ui/spot_detail_page.dart' show SpotDe
 import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart' show AuthLoginPage;
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/login',
   routes: [
     GoRoute(
       path: '/',
