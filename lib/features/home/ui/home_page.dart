@@ -16,7 +16,9 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(
         slivers: [
           _HomeAppBar(),
           SliverPadding(
@@ -55,6 +57,7 @@ class HomePage extends ConsumerWidget {
             ),
           ),
         ],
+      ),
       ),
       bottomNavigationBar: _HomeBottomNav(),
     );
