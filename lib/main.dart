@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-import 'package:dalbit_suwon/core/router/app_router.dart' show appRouter;
+import 'package:dalbit_suwon/core/router/app_router.dart' show appRouterProvider;
 import 'package:dalbit_suwon/core/theme/app_theme.dart' show AppTheme;
 
 void main() async {
@@ -20,17 +20,17 @@ void main() async {
   runApp(const ProviderScope(child: DalbitSuwonApp()));
 }
 
-class DalbitSuwonApp extends StatelessWidget {
+class DalbitSuwonApp extends ConsumerWidget {
   const DalbitSuwonApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: '달빛수원',
       theme: AppTheme.dark,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
-      routerConfig: appRouter,
+      routerConfig: ref.watch(appRouterProvider),
       debugShowCheckedModeBanner: false,
     );
   }
