@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
+import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart' show EmailAlreadyInUseException;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart' show authNotifierProvider;
 
 class AuthLoginPage extends ConsumerStatefulWidget {
@@ -21,6 +22,12 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     try {
       await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
       if (mounted) context.go('/');
+    } on EmailAlreadyInUseException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미 가입된 계정입니다.')),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
