@@ -35,6 +35,9 @@ dependencies:
   supabase_flutter: ^2.9.0
   kakao_flutter_sdk_user: ^1.9.7
 
+  # 로깅
+  logger: ^2.5.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
