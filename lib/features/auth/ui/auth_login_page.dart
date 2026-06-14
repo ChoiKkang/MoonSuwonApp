@@ -31,7 +31,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('카카오 로그인 실패: $e')),
+          const SnackBar(content: Text('카카오 로그인에 실패했습니다. 다시 시도해 주세요.')),
         );
       }
     } finally {
@@ -47,7 +47,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('네이버 로그인 실패: $e')),
+          const SnackBar(content: Text('네이버 로그인에 실패했습니다. 다시 시도해 주세요.')),
         );
       }
     } finally {
@@ -63,7 +63,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Apple 로그인 실패: $e')),
+          const SnackBar(content: Text('Apple 로그인에 실패했습니다. 다시 시도해 주세요.')),
         );
       }
     } finally {
