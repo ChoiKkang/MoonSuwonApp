@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dalbit_suwon/features/auth/data/auth_repository.dart' show AuthRepository;
 import 'package:dalbit_suwon/features/auth/data/auth_repository_supabase.dart' show AuthRepositorySupabase;
@@ -12,25 +13,28 @@ AuthRepository authRepository(Ref ref) => AuthRepositorySupabase();
 @riverpod
 class AuthNotifier extends _$AuthNotifier {
   @override
-  bool build() => ref.read(authRepositoryProvider).isLoggedIn;
+  bool build() {
+    ref.onDispose(
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+        state = data.session != null;
+      }).cancel,
+    );
+    return Supabase.instance.client.auth.currentSession != null;
+  }
 
   Future<void> loginWithKakaoAsync() async {
     await ref.read(authRepositoryProvider).loginWithKakaoAsync();
-    state = true;
   }
 
   Future<void> loginWithNaverAsync() async {
     await ref.read(authRepositoryProvider).loginWithNaverAsync();
-    state = true;
   }
 
   Future<void> loginWithAppleAsync() async {
     await ref.read(authRepositoryProvider).loginWithAppleAsync();
-    state = true;
   }
 
   Future<void> logoutAsync() async {
     await ref.read(authRepositoryProvider).logoutAsync();
-    state = false;
   }
 }
