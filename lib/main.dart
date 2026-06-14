@@ -3,16 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-import 'package:dalbit_suwon/core/router/app_router.dart' show appRouterProvider;
+import 'package:dalbit_suwon/core/config/app_config.dart' show AppConfig;
+import 'package:dalbit_suwon/core/router/app_router.dart'
+    show appRouterProvider;
 import 'package:dalbit_suwon/core/theme/app_theme.dart' show AppTheme;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  const appConfig = AppConfig.fromEnvironment;
+  appConfig.validateRequiredValues();
+
   await Supabase.initialize(
-    url: 'https://feifvxhltehhsugizrob.supabase.co',
-    publishableKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlaWZ2eGhsdGVoaHN1Z2l6cm9iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTc2NDIsImV4cCI6MjA5Njk5MzY0Mn0.-ZVjIgl-uhgRSXxamqXc0EQ2kurbXtfjOK5uLNIOj0s',
+    url: appConfig.supabaseUrl,
+    publishableKey: appConfig.supabasePublishableKey,
   );
 
   // 앱 시작 시 서버에 세션 유효성 검증
@@ -26,7 +30,7 @@ void main() async {
     }
   }
 
-  KakaoSdk.init(nativeAppKey: 'f5cd252fd4129dc5b7a13683013bd151');
+  KakaoSdk.init(nativeAppKey: appConfig.kakaoNativeAppKey);
 
   runApp(const ProviderScope(child: DalbitSuwonApp()));
 }

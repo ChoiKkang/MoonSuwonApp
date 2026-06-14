@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "\ub2ec\ube5b\uc218\uc6d0 Dev",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "toolArgs": [
+                "--dart-define-from-file",
+                "config/dev.json"
+            ]
+        }
+    ]
+}

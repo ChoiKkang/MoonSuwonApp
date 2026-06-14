@@ -191,11 +191,21 @@ fabric.properties
 !/gradle/wrapper/gradle-wrapper.jar
 
 ### Project-specific ###
+# Local build-time app config values
+config/*.json
+!config/example.json
+ios/Flutter/AppSecrets.xcconfig
+
 # OMC (oh-my-claudecode) state files
 .omc/
 
 # IntelliJ / Android Studio project folder
 .idea/
+!.idea/
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations/MoonSuwonApp_Dev.xml
+!.idea/runConfigurations/MoonSuwonApp_Dev.xml
 
 # Flutter build artifacts
 *.flutter-plugins

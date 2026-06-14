@@ -224,6 +224,27 @@ await _client.from('profiles').upsert({'id': id, ...}); // X
 
 ---
 
+## 빌드 타임 설정 / 시크릿 관리
+
+- 앱 초기화 값은 `lib/core/config/app_config.dart`의 `AppConfig`에서만 읽는다.
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `KAKAO_NATIVE_APP_KEY`는 `String.fromEnvironment` 기반으로 주입한다.
+- 로컬 실행은 반드시 다음 명령을 사용한다:
+
+```bash
+flutter run --dart-define-from-file=config/dev.json
+```
+
+- `config/dev.json`, `config/prod.json`, `ios/Flutter/AppSecrets.xcconfig`는 커밋 금지 파일이다.
+- 커밋 가능한 예시는 `config/example.json`, `ios/Flutter/AppSecrets.xcconfig.example`만 사용한다.
+- iOS Kakao URL scheme은 `ios/Flutter/AppSecrets.xcconfig`의 `KAKAO_NATIVE_APP_KEY`로 치환한다.
+- Android Kakao URL scheme은 Gradle `manifestPlaceholders`로 주입한다.
+- VS Code/Cursor는 `.vscode/launch.json`의 `달빛수원 Dev` 구성을 사용한다.
+- Android Studio는 `.idea/runConfigurations/MoonSuwonApp_Dev.xml`의 `MoonSuwonApp Dev` 구성을 사용한다.
+- Xcode Run 버튼으로 직접 실행하면 Dart `--dart-define` 값이 주입되지 않으므로 일반 개발 실행에는 Flutter Run Configuration을 사용한다.
+- Supabase `service_role` 키, Kakao Admin Key, DB 비밀번호 같은 서버 전용 시크릿은 앱에 넣지 않는다.
+
+---
+
 ## 금지 사항
 
 - `show` 없이 현재 앱 패키지 import 금지
@@ -233,3 +254,4 @@ await _client.from('profiles').upsert({'id': id, ...}); // X
 - UseCase 레이어 추가 금지 (옵션 A 유지)
 - raw/core 테이블 직접 접근 금지 (추후 Supabase 연동 시, serving 뷰/RPC만 사용)
 - 외부 서비스 데이터 전송 시 raw `Map<String, dynamic>` 직접 사용 금지 (DTO 사용)
+- 앱 초기화 키/서버 주소를 `main.dart`, `Info.plist`, `AndroidManifest.xml`에 하드코딩 금지

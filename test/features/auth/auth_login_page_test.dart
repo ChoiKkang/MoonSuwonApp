@@ -3,34 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart' show EmailAlreadyInUseException;
-import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart' show AuthNotifier, authNotifierProvider;
-import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart' show AuthLoginPage;
+import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart'
+    show EmailAlreadyInUseException;
+import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
+    show AuthNotifier, authNotifierProvider;
+import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart'
+    show AuthLoginPage;
 
 class _FakeAuthNotifier extends AuthNotifier {
-  _FakeAuthNotifier({Exception? error}) : _error = error;
-  final Exception? _error;
+  _FakeAuthNotifier({this.error});
+  final Exception? error;
 
   @override
   bool build() => false;
 
   @override
   Future<void> loginWithKakaoAsync() async {
-    if (_error != null) throw _error!;
+    if (error != null) throw error!;
   }
 }
 
 Widget _buildApp({Exception? loginError}) {
   final router = GoRouter(
     routes: [
-      GoRoute(path: '/', builder: (_, __) => const Scaffold(body: Text('홈'))),
-      GoRoute(path: '/login', builder: (_, __) => const AuthLoginPage()),
+      GoRoute(
+        path: '/',
+        builder: (_, _) => const Scaffold(body: Text('홈')),
+      ),
+      GoRoute(path: '/login', builder: (_, _) => const AuthLoginPage()),
     ],
     initialLocation: '/login',
   );
   return ProviderScope(
     overrides: [
-      authNotifierProvider.overrideWith(() => _FakeAuthNotifier(error: loginError)),
+      authNotifierProvider.overrideWith(
+        () => _FakeAuthNotifier(error: loginError),
+      ),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -52,9 +60,7 @@ void main() {
     });
 
     testWidgets('로그인 오류 발생 시 에러 스낵바를 띄우고 로그인 페이지를 유지한다', (tester) async {
-      await tester.pumpWidget(
-        _buildApp(loginError: Exception('네트워크 오류')),
-      );
+      await tester.pumpWidget(_buildApp(loginError: Exception('네트워크 오류')));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('카카오로 시작하기'));
