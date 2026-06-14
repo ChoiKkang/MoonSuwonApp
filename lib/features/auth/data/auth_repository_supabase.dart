@@ -2,6 +2,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dalbit_suwon/core/logger/app_logger.dart' show AppLogger;
+import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart' show EmailAlreadyInUseException;
 import 'package:dalbit_suwon/features/auth/data/auth_repository.dart' show AuthRepository;
 import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
 
@@ -50,7 +51,14 @@ class AuthRepositorySupabase implements AuthRepository {
     } catch (e, st) {
       AppLogger.error('카카오 me() 이메일 조회 실패', error: e, stackTrace: st);
     }
+    EmailAlreadyInUseException? emailConflict;
+    try {
+      await _updateAuthEmailAsync(kakaoEmail);
+    } on EmailAlreadyInUseException catch (e) {
+      emailConflict = e;
+    }
     await _upsertProfileAsync(provider: 'kakao', kakaoEmail: kakaoEmail);
+    if (emailConflict != null) throw emailConflict;
   }
 
   @override
@@ -69,6 +77,21 @@ class AuthRepositorySupabase implements AuthRepository {
       await UserApi.instance.logout();
     } catch (_) {}
     await _client.auth.signOut();
+  }
+
+  Future<void> _updateAuthEmailAsync(String? email) async {
+    if (email == null || email.isEmpty) return;
+    final currentEmail = _client.auth.currentUser?.email;
+    if (currentEmail != null && currentEmail.isNotEmpty) return;
+    try {
+      await _client.auth.updateUser(UserAttributes(email: email));
+      AppLogger.auth('auth.users 이메일 업데이트 완료', data: email);
+    } on AuthException catch (e, st) {
+      AppLogger.error('auth.users 이메일 중복 감지', error: e, stackTrace: st);
+      throw const EmailAlreadyInUseException();
+    } catch (e, st) {
+      AppLogger.error('auth.users 이메일 업데이트 실패 (로그인은 계속)', error: e, stackTrace: st);
+    }
   }
 
   Future<void> _upsertProfileAsync({
