@@ -1,6 +1,6 @@
-# 달빛수원 (Dalbit Suwon) — CLAUDE.md
+# 달빛수원 (Dalbit Suwon) — AGENTS.md
 
-이 파일은 Claude Code가 이 프로젝트에서 코드를 작성할 때 반드시 따라야 하는 아키텍처와 코딩 스타일 가이드입니다.
+이 파일은 AI 에이전트(Codex, Copilot 등)가 이 프로젝트에서 코드를 작성할 때 반드시 따라야 하는 아키텍처와 코딩 스타일 가이드입니다.
 
 ---
 
