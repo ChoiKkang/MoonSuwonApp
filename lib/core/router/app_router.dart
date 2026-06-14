@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dalbit_suwon/features/home/ui/home_page.dart' show HomePage;
 import 'package:dalbit_suwon/features/course/ui/course_detail_page.dart' show CourseDetailPage;
@@ -10,6 +11,12 @@ import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart' show AuthLog
 
 final appRouter = GoRouter(
   initialLocation: '/login',
+  redirect: (context, state) {
+    final hasSession = Supabase.instance.client.auth.currentSession != null;
+    final isLoginPage = state.matchedLocation == '/login';
+    if (hasSession && isLoginPage) return '/';
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/',

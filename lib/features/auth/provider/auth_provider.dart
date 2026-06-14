@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:dalbit_suwon/features/auth/data/auth_repository.dart' show AuthRepository;
-import 'package:dalbit_suwon/features/auth/data/auth_repository_mock.dart' show AuthRepositoryMock;
+import 'package:dalbit_suwon/features/auth/data/auth_repository_supabase.dart' show AuthRepositorySupabase;
 
 part 'auth_provider.g.dart';
 
 @riverpod
-AuthRepository authRepository(Ref ref) => AuthRepositoryMock();
+AuthRepository authRepository(Ref ref) => AuthRepositorySupabase();
 
 @riverpod
 class AuthNotifier extends _$AuthNotifier {

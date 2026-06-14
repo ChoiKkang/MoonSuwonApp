@@ -18,28 +18,49 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
 
   Future<void> _onLoginWithKakaoAsync() async {
     setState(() => loading = true);
-    await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
-    if (mounted) {
-      setState(() => loading = false);
-      context.go('/');
+    try {
+      await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
+      if (mounted) context.go('/');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('카카오 로그인 실패: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> _onLoginWithNaverAsync() async {
     setState(() => loading = true);
-    await ref.read(authNotifierProvider.notifier).loginWithNaverAsync();
-    if (mounted) {
-      setState(() => loading = false);
-      context.go('/');
+    try {
+      await ref.read(authNotifierProvider.notifier).loginWithNaverAsync();
+      if (mounted) context.go('/');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('네이버 로그인 실패: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> _onLoginWithAppleAsync() async {
     setState(() => loading = true);
-    await ref.read(authNotifierProvider.notifier).loginWithAppleAsync();
-    if (mounted) {
-      setState(() => loading = false);
-      context.go('/');
+    try {
+      await ref.read(authNotifierProvider.notifier).loginWithAppleAsync();
+      if (mounted) context.go('/');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Apple 로그인 실패: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
