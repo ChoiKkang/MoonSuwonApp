@@ -1,4 +1,4 @@
-package com.dalbit.dalbit_suwon
+package team.choikkang.dalbitsuwon
 
 import io.flutter.embedding.android.FlutterActivity
 
