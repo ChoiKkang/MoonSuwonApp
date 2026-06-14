@@ -146,7 +146,7 @@ class _CourseCardList extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: courses.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) =>
             _HomeCourseCard(course: courses[index]),
       ),
@@ -181,7 +181,7 @@ class _HomeCourseCard extends StatelessWidget {
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       height: 120,
                       color: AppColors.surfaceContainerHigh,
                     ),
@@ -231,7 +231,7 @@ class _StatBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.7),
+        color: AppColors.background.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
