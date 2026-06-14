@@ -40,7 +40,7 @@ class HeroImageHeader extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  AppColors.background.withOpacity(0.4),
+                  AppColors.background.withValues(alpha: 0.4),
                   AppColors.background,
                 ],
                 stops: const [0.4, 0.7, 1.0],

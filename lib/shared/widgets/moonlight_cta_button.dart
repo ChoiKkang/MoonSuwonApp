@@ -31,7 +31,7 @@ class MoonlightCtaButton extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.moonlightGold,
               foregroundColor: const Color(0xFF283044),
-              disabledBackgroundColor: AppColors.moonlightGold.withOpacity(0.5),
+              disabledBackgroundColor: AppColors.moonlightGold.withValues(alpha: 0.5),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -84,7 +84,7 @@ class MoonlightCtaBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.8),
+        color: AppColors.background.withValues(alpha: 0.8),
         border: Border(
           top: BorderSide(color: AppColors.glassBorder),
         ),

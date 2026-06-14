@@ -41,10 +41,10 @@ class CourseCompletePage extends ConsumerWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.moonlightGold.withOpacity(0.15),
+                  color: AppColors.moonlightGold.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: AppColors.moonlightGold.withOpacity(0.3)),
+                      color: AppColors.moonlightGold.withValues(alpha: 0.3)),
                 ),
                 child: const Icon(Icons.star_outline,
                     color: AppColors.moonlightGold, size: 32),
@@ -112,7 +112,7 @@ class CourseCompletePage extends ConsumerWidget {
 
 class _CompletionCard extends StatelessWidget {
   const _CompletionCard({required this.detail});
-  final detail;
+  final dynamic detail;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +138,7 @@ class _CompletionCard extends StatelessWidget {
                   height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     height: 160,
                     color: AppColors.surfaceContainerHigh,
                   ),
@@ -181,11 +181,11 @@ class _CompletionCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColors.moonlightGold.withOpacity(0.15),
+                            color: AppColors.moonlightGold.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                                 color:
-                                    AppColors.moonlightGold.withOpacity(0.3)),
+                                    AppColors.moonlightGold.withValues(alpha: 0.3)),
                           ),
                           child: Text('Perfect',
                               style: AppTextStyles.labelSm.copyWith(

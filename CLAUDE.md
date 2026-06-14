@@ -185,6 +185,66 @@ CourseRepository courseRepository(Ref ref) {
 
 ---
 
+## DTO 규칙
+
+- 외부 서비스(Supabase 등)에 데이터 전송 시 반드시 DTO 클래스 사용
+- DTO 파일은 `features/{feature}/data/models/` 에 위치
+- 파일명 suffix: `_dto` → `profile_dto.dart`
+- 쓰기 전용 DTO: `toJson()` 메서드 포함
+- 읽기 전용 DTO: `fromJson()` 팩토리 포함
+- raw `Map<String, dynamic>` 직접 전달 금지
+
+```dart
+// DTO 예시
+class ProfileDto {
+  const ProfileDto({
+    required this.id,
+    this.nickname,
+    required this.provider,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String? nickname;
+  final String provider;
+  final DateTime updatedAt;
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'nickname': nickname,
+        'provider': provider,
+        'updated_at': updatedAt.toIso8601String(),
+      };
+}
+
+// Repository에서 사용
+await _client.from('profiles').upsert(dto.toJson()); // O
+await _client.from('profiles').upsert({'id': id, ...}); // X
+```
+
+---
+
+## 빌드 타임 설정 / 시크릿 관리
+
+- 앱 초기화 값은 `lib/core/config/app_config.dart`의 `AppConfig`에서만 읽는다.
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `KAKAO_NATIVE_APP_KEY`는 `String.fromEnvironment` 기반으로 주입한다.
+- 로컬 실행은 반드시 다음 명령을 사용한다:
+
+```bash
+flutter run --dart-define-from-file=config/dev.json
+```
+
+- `config/dev.json`, `config/prod.json`, `ios/Flutter/AppSecrets.xcconfig`는 커밋 금지 파일이다.
+- 커밋 가능한 예시는 `config/example.json`, `ios/Flutter/AppSecrets.xcconfig.example`만 사용한다.
+- iOS Kakao URL scheme은 `ios/Flutter/AppSecrets.xcconfig`의 `KAKAO_NATIVE_APP_KEY`로 치환한다.
+- Android Kakao URL scheme은 Gradle `manifestPlaceholders`로 주입한다.
+- VS Code/Cursor는 `.vscode/launch.json`의 `달빛수원 Dev` 구성을 사용한다.
+- Android Studio는 `.idea/runConfigurations/MoonSuwonApp_Dev.xml`의 `MoonSuwonApp Dev` 구성을 사용한다.
+- Xcode Run 버튼으로 직접 실행하면 Dart `--dart-define` 값이 주입되지 않으므로 일반 개발 실행에는 Flutter Run Configuration을 사용한다.
+- Supabase `service_role` 키, Kakao Admin Key, DB 비밀번호 같은 서버 전용 시크릿은 앱에 넣지 않는다.
+
+---
+
 ## 금지 사항
 
 - `show` 없이 현재 앱 패키지 import 금지
@@ -193,3 +253,5 @@ CourseRepository courseRepository(Ref ref) {
 - 파일 하나에 스크린 위젯 2개 이상 금지
 - UseCase 레이어 추가 금지 (옵션 A 유지)
 - raw/core 테이블 직접 접근 금지 (추후 Supabase 연동 시, serving 뷰/RPC만 사용)
+- 외부 서비스 데이터 전송 시 raw `Map<String, dynamic>` 직접 사용 금지 (DTO 사용)
+- 앱 초기화 키/서버 주소를 `main.dart`, `Info.plist`, `AndroidManifest.xml`에 하드코딩 금지

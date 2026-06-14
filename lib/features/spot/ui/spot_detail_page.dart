@@ -82,7 +82,7 @@ class _SpotDetailContent extends StatelessWidget {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+              padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top, 20, 120),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _SpotHeader(detail: detail),
@@ -242,7 +242,7 @@ class _RomanticCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.softAmber.withOpacity(0.3)),
+        border: Border.all(color: AppColors.softAmber.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,7 +266,7 @@ class _RomanticCard extends StatelessWidget {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: AppColors.softAmber.withOpacity(0.1),
+                        color: AppColors.softAmber.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.favorite,
@@ -297,11 +297,11 @@ class _NearbySpotList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160,
+      height: 172,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: spots.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) => _NearbySpotCard(spot: spots[index]),
       ),
     );
@@ -332,7 +332,7 @@ class _NearbySpotCard extends StatelessWidget {
               height: 96,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (_, _, _) => Container(
                 height: 96,
                 color: AppColors.surfaceContainerHigh,
               ),

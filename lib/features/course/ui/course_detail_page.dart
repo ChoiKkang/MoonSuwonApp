@@ -68,7 +68,7 @@ class _CourseDetailContent extends StatelessWidget {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+              padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top, 20, 120),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _CourseHeader(detail: detail),

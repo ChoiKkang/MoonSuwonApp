@@ -195,7 +195,7 @@ class _ProgressSpotItem extends StatelessWidget {
                     child: Container(
                       width: 1,
                       color: isCompleted
-                          ? AppColors.moonlightGold.withOpacity(0.4)
+                          ? AppColors.moonlightGold.withValues(alpha: 0.4)
                           : AppColors.outlineVariant,
                       margin: const EdgeInsets.symmetric(vertical: 4),
                     ),
@@ -216,7 +216,7 @@ class _ProgressSpotItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isCurrent
-                        ? AppColors.softAmber.withOpacity(0.3)
+                        ? AppColors.softAmber.withValues(alpha: 0.3)
                         : AppColors.glassBorder,
                   ),
                 ),
@@ -231,7 +231,7 @@ class _ProgressSpotItem extends StatelessWidget {
                                 horizontal: 8, vertical: 3),
                             margin: const EdgeInsets.only(bottom: 6),
                             decoration: BoxDecoration(
-                              color: AppColors.softAmber.withOpacity(0.15),
+                              color: AppColors.softAmber.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text('현재 장소',
@@ -265,10 +265,10 @@ class _ProgressSpotItem extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: AppColors.softAmber.withOpacity(0.08),
+                          color: AppColors.softAmber.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.softAmber.withOpacity(0.2)),
+                              color: AppColors.softAmber.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [

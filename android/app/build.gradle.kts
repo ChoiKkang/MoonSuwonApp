@@ -1,11 +1,33 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+fun dartDefineValue(key: String): String? {
+    val dartDefines = providers.gradleProperty("dart-defines").orNull ?: return null
+    return dartDefines
+        .split(",")
+        .mapNotNull { encoded ->
+            runCatching {
+                String(Base64.getDecoder().decode(encoded), Charsets.UTF_8)
+            }.getOrNull()
+        }
+        .firstOrNull { it.startsWith("$key=") }
+        ?.substringAfter("=")
+        ?.takeIf { it.isNotBlank() }
+}
+
+val kakaoNativeAppKey =
+    dartDefineValue("KAKAO_NATIVE_APP_KEY")
+        ?: providers.gradleProperty("KAKAO_NATIVE_APP_KEY").orNull
+        ?: providers.environmentVariable("KAKAO_NATIVE_APP_KEY").orNull
+        ?: ""
+
 android {
-    namespace = "com.dalbit.dalbit_suwon"
+    namespace = "team.choikkang.dalbitsuwon"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,13 +38,14 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.dalbit.dalbit_suwon"
+        applicationId = "team.choikkang.dalbitsuwon"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["kakaoNativeAppKey"] = kakaoNativeAppKey
     }
 
     buildTypes {

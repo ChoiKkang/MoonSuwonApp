@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
+import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart' show EmailAlreadyInUseException;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart' show authNotifierProvider;
 
 class AuthLoginPage extends ConsumerStatefulWidget {
@@ -18,28 +19,55 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
 
   Future<void> _onLoginWithKakaoAsync() async {
     setState(() => loading = true);
-    await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
-    if (mounted) {
-      setState(() => loading = false);
-      context.pop();
+    try {
+      await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
+      if (mounted) context.go('/');
+    } on EmailAlreadyInUseException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미 가입된 계정입니다.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('카카오 로그인에 실패했습니다. 다시 시도해 주세요.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> _onLoginWithNaverAsync() async {
     setState(() => loading = true);
-    await ref.read(authNotifierProvider.notifier).loginWithNaverAsync();
-    if (mounted) {
-      setState(() => loading = false);
-      context.pop();
+    try {
+      await ref.read(authNotifierProvider.notifier).loginWithNaverAsync();
+      if (mounted) context.go('/');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('네이버 로그인에 실패했습니다. 다시 시도해 주세요.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
   Future<void> _onLoginWithAppleAsync() async {
     setState(() => loading = true);
-    await ref.read(authNotifierProvider.notifier).loginWithAppleAsync();
-    if (mounted) {
-      setState(() => loading = false);
-      context.pop();
+    try {
+      await ref.read(authNotifierProvider.notifier).loginWithAppleAsync();
+      if (mounted) context.go('/');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Apple 로그인에 실패했습니다. 다시 시도해 주세요.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
   }
 
@@ -107,7 +135,7 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
               ),
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.pop(),
+                onTap: () => context.go('/'),
                 child: Text(
                   '로그인 없이 둘러보기',
                   style: AppTextStyles.labelMd
