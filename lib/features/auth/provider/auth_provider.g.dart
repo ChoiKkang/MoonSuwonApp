@@ -6,7 +6,7 @@ part of 'auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authRepositoryHash() => r'279b9a7b53099fbb68d4809d1c377a6d61f46713';
+String _$authRepositoryHash() => r'c6504e286bb79396413a21c20bf300a1dfa7951d';
 
 /// See also [authRepository].
 @ProviderFor(authRepository)
@@ -23,7 +23,24 @@ final authRepositoryProvider = AutoDisposeProvider<AuthRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthRepositoryRef = AutoDisposeProviderRef<AuthRepository>;
-String _$authNotifierHash() => r'7440994c47c3aac6166b5a9329ed7d39e6468f71';
+String _$currentProfileHash() => r'68b4b002fd99b08f882a0693b60dd305edf2187c';
+
+/// See also [currentProfile].
+@ProviderFor(currentProfile)
+final currentProfileProvider = AutoDisposeFutureProvider<ProfileDto?>.internal(
+  currentProfile,
+  name: r'currentProfileProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$currentProfileHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CurrentProfileRef = AutoDisposeFutureProviderRef<ProfileDto?>;
+String _$authNotifierHash() => r'2944f382b105a8803bc1e16521f6f13f9a293517';
 
 /// See also [AuthNotifier].
 @ProviderFor(AuthNotifier)

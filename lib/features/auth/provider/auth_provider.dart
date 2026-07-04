@@ -4,11 +4,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dalbit_suwon/features/auth/data/auth_repository.dart' show AuthRepository;
 import 'package:dalbit_suwon/features/auth/data/auth_repository_supabase.dart' show AuthRepositorySupabase;
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
 
 part 'auth_provider.g.dart';
 
 @riverpod
 AuthRepository authRepository(Ref ref) => AuthRepositorySupabase();
+
+@riverpod
+Future<ProfileDto?> currentProfile(Ref ref) async {
+  final isLoggedIn = ref.watch(authNotifierProvider);
+  if (!isLoggedIn) return null;
+  return ref.read(authRepositoryProvider).fetchCurrentProfileAsync();
+}
 
 @riverpod
 class AuthNotifier extends _$AuthNotifier {
@@ -36,5 +44,9 @@ class AuthNotifier extends _$AuthNotifier {
 
   Future<void> logoutAsync() async {
     await ref.read(authRepositoryProvider).logoutAsync();
+  }
+
+  Future<void> deleteAccountAsync() async {
+    await ref.read(authRepositoryProvider).deleteAccountAsync();
   }
 }
