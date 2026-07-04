@@ -693,9 +693,16 @@ Future<void> _confirmLogoutAsync(BuildContext context) async {
     ),
   );
   if (confirmed != true || !context.mounted) return;
-  await ProviderScope.containerOf(context)
-      .read(authNotifierProvider.notifier)
-      .logoutAsync();
+
+  // logoutAsync()가 완료되는 순간 isLoggedIn이 false로 바뀌면서
+  // 이 버튼을 감싼 _AccountActions가 조건부 렌더링으로 즉시 트리에서
+  // 제거될 수 있다. await 이후에 context를 다시 쓰면 이미 unmounted라
+  // context.mounted가 false가 되어 네비게이션이 조용히 씹힌다.
+  // 그래서 context에 의존하지 않는 router 참조를 await 전에 미리 캡처한다.
+  final container = ProviderScope.containerOf(context);
+  final router = GoRouter.of(context);
+  await container.read(authNotifierProvider.notifier).logoutAsync();
+  router.go('/login');
 }
 
 Future<void> _confirmWithdrawAsync(BuildContext context) async {
@@ -719,7 +726,12 @@ Future<void> _confirmWithdrawAsync(BuildContext context) async {
   );
   if (confirmed != true || !context.mounted) return;
 
+  // logoutAsync와 동일한 이유로, deleteAccountAsync 성공 시 isLoggedIn이
+  // false가 되어 _AccountActions가 즉시 unmount될 수 있다. 실패 시 에러
+  // 스낵바를 띄우기 위한 context는 그대로 유효하므로(성공하지 않았으니
+  // 위젯이 사라지지 않음) 그 경로는 기존 context.mounted 체크로 충분하다.
   final notifier = ProviderScope.containerOf(context).read(authNotifierProvider.notifier);
+  final router = GoRouter.of(context);
   try {
     await notifier.deleteAccountAsync();
   } catch (_) {
@@ -728,5 +740,7 @@ Future<void> _confirmWithdrawAsync(BuildContext context) async {
         const SnackBar(content: Text('회원탈퇴에 실패했습니다. 잠시 후 다시 시도해 주세요.')),
       );
     }
+    return;
   }
+  router.go('/login');
 }
