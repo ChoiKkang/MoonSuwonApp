@@ -4,4 +4,5 @@ abstract class AuthRepository {
   Future<void> loginWithNaverAsync();
   Future<void> loginWithAppleAsync();
   Future<void> logoutAsync();
+  Future<void> deleteAccountAsync();
 }

@@ -127,6 +127,23 @@ class AuthRepositorySupabase implements AuthRepository {
     await _client.auth.signOut();
   }
 
+  @override
+  Future<void> deleteAccountAsync() async {
+    AppLogger.auth('회원탈퇴 요청');
+    try {
+      await _client.rpc('delete_own_account');
+    } catch (e, st) {
+      AppLogger.error('회원탈퇴 실패', error: e, stackTrace: st);
+      rethrow;
+    }
+    AppLogger.auth('회원탈퇴 완료');
+
+    try {
+      await kakao.UserApi.instance.logout();
+    } catch (_) {}
+    await _client.auth.signOut();
+  }
+
   Future<void> _updateAuthEmailAsync(String? email) async {
     if (email == null || email.isEmpty) return;
     final currentEmail = _client.auth.currentUser?.email;
