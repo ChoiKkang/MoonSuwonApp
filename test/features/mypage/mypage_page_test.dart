@@ -13,9 +13,11 @@ import 'package:dalbit_suwon/features/mypage/provider/mypage_provider.dart'
 import 'package:dalbit_suwon/features/mypage/ui/mypage_page.dart' show MyPagePage;
 
 class _FakeAuthNotifier extends AuthNotifier {
-  _FakeAuthNotifier(this._initial);
+  _FakeAuthNotifier(this._initial, {this.deleteError});
   final bool _initial;
+  final Exception? deleteError;
   bool loggedOutCalled = false;
+  bool deleteAccountCalled = false;
 
   @override
   bool build() => _initial;
@@ -23,6 +25,13 @@ class _FakeAuthNotifier extends AuthNotifier {
   @override
   Future<void> logoutAsync() async {
     loggedOutCalled = true;
+    state = false;
+  }
+
+  @override
+  Future<void> deleteAccountAsync() async {
+    deleteAccountCalled = true;
+    if (deleteError != null) throw deleteError!;
     state = false;
   }
 }
@@ -48,7 +57,7 @@ const _summary = MyPageSummary(
   appVersion: 'v1.2.4',
 );
 
-Widget _buildApp({required bool isLoggedIn}) {
+Widget _buildApp({required bool isLoggedIn, Exception? deleteError}) {
   final router = GoRouter(
     routes: [
       GoRoute(path: '/mypage', builder: (_, _) => const MyPagePage()),
@@ -58,7 +67,9 @@ Widget _buildApp({required bool isLoggedIn}) {
   );
   return ProviderScope(
     overrides: [
-      authNotifierProvider.overrideWith(() => _FakeAuthNotifier(isLoggedIn)),
+      authNotifierProvider.overrideWith(
+        () => _FakeAuthNotifier(isLoggedIn, deleteError: deleteError),
+      ),
       myPageSummaryProvider.overrideWith((ref) async => _summary),
     ],
     child: MaterialApp.router(routerConfig: router),
@@ -120,6 +131,34 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('나들이객'), findsOneWidget);
+    });
+
+    testWidgets('회원탈퇴 확인 시 계정 삭제를 호출하고 게스트 화면으로 전환된다', (tester) async {
+      await _pumpTall(tester, _buildApp(isLoggedIn: true));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('회원탈퇴'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('탈퇴'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('나들이객'), findsOneWidget);
+    });
+
+    testWidgets('회원탈퇴 실패 시 에러 스낵바를 띄우고 로그인 상태를 유지한다', (tester) async {
+      await _pumpTall(
+        tester,
+        _buildApp(isLoggedIn: true, deleteError: Exception('네트워크 오류')),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('회원탈퇴'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('탈퇴'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('회원탈퇴에 실패했습니다. 잠시 후 다시 시도해 주세요.'), findsOneWidget);
+      expect(find.text('수원달빛러'), findsOneWidget);
     });
   });
 }

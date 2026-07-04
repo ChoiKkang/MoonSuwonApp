@@ -677,5 +677,15 @@ Future<void> _confirmWithdrawAsync(BuildContext context) async {
     ),
   );
   if (confirmed != true || !context.mounted) return;
-  _showComingSoon(context, '회원탈퇴');
+
+  final notifier = ProviderScope.containerOf(context).read(authNotifierProvider.notifier);
+  try {
+    await notifier.deleteAccountAsync();
+  } catch (_) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('회원탈퇴에 실패했습니다. 잠시 후 다시 시도해 주세요.')),
+      );
+    }
+  }
 }

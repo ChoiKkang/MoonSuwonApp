@@ -37,4 +37,8 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> logoutAsync() async {
     await ref.read(authRepositoryProvider).logoutAsync();
   }
+
+  Future<void> deleteAccountAsync() async {
+    await ref.read(authRepositoryProvider).deleteAccountAsync();
+  }
 }

@@ -29,4 +29,10 @@ class AuthRepositoryMock implements AuthRepository {
     await Future.delayed(const Duration(milliseconds: 200));
     _loggedIn = false;
   }
+
+  @override
+  Future<void> deleteAccountAsync() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    _loggedIn = false;
+  }
 }
