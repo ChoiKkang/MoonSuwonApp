@@ -26,7 +26,7 @@ class _RouterNotifier extends ChangeNotifier {
 final appRouterProvider = Provider<GoRouter>((ref) {
   final notifier = _RouterNotifier(ref);
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/login',
     refreshListenable: notifier,
     redirect: (context, state) {
       final isLoggedIn = ref.read(authNotifierProvider);

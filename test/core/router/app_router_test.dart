@@ -16,7 +16,7 @@ class _FakeAuthNotifier extends AuthNotifier {
 }
 
 void main() {
-  testWidgets('비회원 사용자는 앱 실행 시 홈으로 진입한다', (tester) async {
+  testWidgets('비회원 사용자는 앱 실행 시 로그인 화면으로 진입한다', (tester) async {
     late final ProviderContainer container;
     addTearDown(() => container.dispose());
 
@@ -35,8 +35,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(router.routeInformationProvider.value.uri.path, '/');
-    expect(find.text('추천 데이트 코스'), findsOneWidget);
+    expect(router.routeInformationProvider.value.uri.path, '/login');
+    expect(find.text('카카오로 시작하기'), findsOneWidget);
   });
 
   testWidgets('로그인 사용자가 로그인 화면에 접근하면 홈으로 보낸다', (tester) async {
