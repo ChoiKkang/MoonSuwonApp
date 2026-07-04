@@ -6,6 +6,8 @@ import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
 import 'package:dalbit_suwon/features/course/provider/course_provider.dart' show coursesProvider;
+import 'package:dalbit_suwon/shared/widgets/app_bottom_nav.dart'
+    show AppBottomNav, AppBottomNavTab;
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -59,7 +61,7 @@ class HomePage extends ConsumerWidget {
         ],
       ),
       ),
-      bottomNavigationBar: _HomeBottomNav(),
+      bottomNavigationBar: const AppBottomNav(currentTab: AppBottomNavTab.home),
     );
   }
 }
@@ -284,19 +286,3 @@ class _NowGoodSpotRow extends StatelessWidget {
   }
 }
 
-class _HomeBottomNav extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: '홈'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.near_me_outlined), label: '내 주변'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark_outline), label: '찜'),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: '마이'),
-      ],
-    );
-  }
-}
