@@ -19,6 +19,17 @@ class ProfileDto {
   final bool isPrivateEmail;
   final DateTime updatedAt;
 
+  factory ProfileDto.fromJson(Map<String, dynamic> json) => ProfileDto(
+    id: json['id'] as String,
+    email: json['email'] as String?,
+    nickname: json['nickname'] as String?,
+    avatarUrl: json['avatar_url'] as String?,
+    provider: json['provider'] as String,
+    providerSub: json['provider_sub'] as String,
+    isPrivateEmail: json['is_private_email'] as bool? ?? false,
+    updatedAt: DateTime.parse(json['updated_at'] as String),
+  );
+
   Map<String, dynamic> toJson() => {
     'id': id,
     if (email != null) 'email': email,

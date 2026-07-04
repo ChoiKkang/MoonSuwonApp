@@ -20,9 +20,6 @@ class MyPageRepositoryMock implements MyPageRepository {
   Future<MyPageSummary> fetchSummaryAsync() async {
     await Future.delayed(const Duration(milliseconds: 300));
     return const MyPageSummary(
-      nickname: '수원달빛러',
-      avatarUrl: null,
-      loginProviderLabel: 'Apple로 로그인함',
       favoriteSpotCount: 12,
       favoriteCourseCount: 3,
       recentCourse: _recentCourse,

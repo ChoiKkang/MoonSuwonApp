@@ -23,6 +23,23 @@ final authRepositoryProvider = AutoDisposeProvider<AuthRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AuthRepositoryRef = AutoDisposeProviderRef<AuthRepository>;
+String _$currentProfileHash() => r'68b4b002fd99b08f882a0693b60dd305edf2187c';
+
+/// See also [currentProfile].
+@ProviderFor(currentProfile)
+final currentProfileProvider = AutoDisposeFutureProvider<ProfileDto?>.internal(
+  currentProfile,
+  name: r'currentProfileProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$currentProfileHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef CurrentProfileRef = AutoDisposeFutureProviderRef<ProfileDto?>;
 String _$authNotifierHash() => r'2944f382b105a8803bc1e16521f6f13f9a293517';
 
 /// See also [AuthNotifier].

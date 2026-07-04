@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
-    show AuthNotifier, authNotifierProvider;
+    show AuthNotifier, authNotifierProvider, currentProfileProvider;
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
 import 'package:dalbit_suwon/features/mypage/data/models/mypage_summary.dart'
     show MyPageSummary;
@@ -36,10 +37,16 @@ class _FakeAuthNotifier extends AuthNotifier {
   }
 }
 
-const _summary = MyPageSummary(
+final _testProfile = ProfileDto(
+  id: 'test-user-id',
   nickname: '수원달빛러',
-  avatarUrl: null,
-  loginProviderLabel: 'Apple로 로그인함',
+  provider: 'apple',
+  providerSub: 'test-sub',
+  isPrivateEmail: false,
+  updatedAt: DateTime(2024, 1, 1),
+);
+
+const _summary = MyPageSummary(
   favoriteSpotCount: 12,
   favoriteCourseCount: 3,
   recentCourse: CourseSummary(
@@ -71,6 +78,9 @@ Widget _buildApp({required bool isLoggedIn, Exception? deleteError}) {
         () => _FakeAuthNotifier(isLoggedIn, deleteError: deleteError),
       ),
       myPageSummaryProvider.overrideWith((ref) async => _summary),
+      currentProfileProvider.overrideWith(
+        (ref) async => isLoggedIn ? _testProfile : null,
+      ),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
