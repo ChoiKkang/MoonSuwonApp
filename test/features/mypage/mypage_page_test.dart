@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,6 +37,24 @@ class _FakeAuthNotifier extends AuthNotifier {
     if (deleteError != null) throw deleteError!;
     state = false;
   }
+}
+
+/// 로그아웃 도중 상태 변화(state=false)가 먼저 반영되어
+/// _AccountActions 위젯이 언마운트된 "이후"에 logoutAsync()가 완료되는
+/// 실제 앱의 타이밍을 재현하기 위한 notifier.
+class _SlowLogoutAuthNotifier extends AuthNotifier {
+  final _completer = Completer<void>();
+
+  @override
+  bool build() => true;
+
+  @override
+  Future<void> logoutAsync() async {
+    state = false;
+    await _completer.future;
+  }
+
+  void completeLogout() => _completer.complete();
 }
 
 final _testProfile = ProfileDto(
@@ -86,6 +106,24 @@ Widget _buildApp({required bool isLoggedIn, Exception? deleteError}) {
   );
 }
 
+Widget _buildAppWithNotifier(AuthNotifier Function() createNotifier) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(path: '/mypage', builder: (_, _) => const MyPagePage()),
+      GoRoute(path: '/login', builder: (_, _) => const Scaffold(body: Text('로그인 화면'))),
+    ],
+    initialLocation: '/mypage',
+  );
+  return ProviderScope(
+    overrides: [
+      authNotifierProvider.overrideWith(createNotifier),
+      myPageSummaryProvider.overrideWith((ref) async => _summary),
+      currentProfileProvider.overrideWith((ref) async => _testProfile),
+    ],
+    child: MaterialApp.router(routerConfig: router),
+  );
+}
+
 Future<void> _pumpTall(WidgetTester tester, Widget app) async {
   await tester.binding.setSurfaceSize(const Size(400, 2200));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -131,7 +169,7 @@ void main() {
       expect(find.text('로그인 / 회원가입'), findsNothing);
     });
 
-    testWidgets('로그아웃 확인 시 게스트 화면으로 전환된다', (tester) async {
+    testWidgets('로그아웃 확인 시 로그인 화면으로 이동한다', (tester) async {
       await _pumpTall(tester, _buildApp(isLoggedIn: true));
       await tester.pumpAndSettle();
 
@@ -140,10 +178,34 @@ void main() {
       await tester.tap(find.text('로그아웃').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('나들이객'), findsOneWidget);
+      expect(find.text('로그인 화면'), findsOneWidget);
     });
 
-    testWidgets('회원탈퇴 확인 시 계정 삭제를 호출하고 게스트 화면으로 전환된다', (tester) async {
+    testWidgets(
+      '로그아웃 처리 중 상태 변화로 위젯이 먼저 언마운트되어도 로그인 화면으로 이동한다 (회귀 테스트)',
+      (tester) async {
+        final notifier = _SlowLogoutAuthNotifier();
+        await _pumpTall(tester, _buildAppWithNotifier(() => notifier));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('로그아웃'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('로그아웃').last);
+        // logoutAsync()가 state=false를 설정한 뒤 completer에서 대기 중인 시점까지만 진행.
+        // completer가 스스로 끝나지 않으므로 pumpAndSettle은 여기서 안정된다.
+        await tester.pumpAndSettle();
+        // 이 시점에 isLoggedIn이 false가 되어 _AccountActions(및 그 안의
+        // 로그아웃 버튼 context)가 이미 트리에서 제거되어 있어야 한다.
+        expect(find.text('로그아웃'), findsNothing);
+
+        notifier.completeLogout();
+        await tester.pumpAndSettle();
+
+        expect(find.text('로그인 화면'), findsOneWidget);
+      },
+    );
+
+    testWidgets('회원탈퇴 확인 시 계정 삭제를 호출하고 로그인 화면으로 이동한다', (tester) async {
       await _pumpTall(tester, _buildApp(isLoggedIn: true));
       await tester.pumpAndSettle();
 
@@ -152,7 +214,7 @@ void main() {
       await tester.tap(find.text('탈퇴'));
       await tester.pumpAndSettle();
 
-      expect(find.text('나들이객'), findsOneWidget);
+      expect(find.text('로그인 화면'), findsOneWidget);
     });
 
     testWidgets('회원탈퇴 실패 시 에러 스낵바를 띄우고 로그인 상태를 유지한다', (tester) async {
