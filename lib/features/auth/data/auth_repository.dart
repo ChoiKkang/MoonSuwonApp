@@ -1,3 +1,5 @@
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
+
 abstract class AuthRepository {
   bool get isLoggedIn;
   Future<void> loginWithKakaoAsync();
@@ -5,4 +7,5 @@ abstract class AuthRepository {
   Future<void> loginWithAppleAsync();
   Future<void> logoutAsync();
   Future<void> deleteAccountAsync();
+  Future<ProfileDto?> fetchCurrentProfileAsync();
 }

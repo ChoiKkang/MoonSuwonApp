@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
-    show authNotifierProvider;
+    show authNotifierProvider, currentProfileProvider;
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
 import 'package:dalbit_suwon/features/mypage/data/models/mypage_summary.dart'
     show MyPageSummary;
@@ -25,6 +26,7 @@ class MyPagePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoggedIn = ref.watch(authNotifierProvider);
     final summaryAsync = ref.watch(myPageSummaryProvider);
+    final profileAsync = ref.watch(currentProfileProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -44,7 +46,11 @@ class MyPagePage extends ConsumerWidget {
                   delegate: SliverChildListDelegate([
                     const SizedBox(height: 8),
                     isLoggedIn
-                        ? _ProfileCardLoggedIn(summary: summary)
+                        ? profileAsync.when(
+                            loading: () => const _ProfileCardLoading(),
+                            error: (e, _) => _ProfileCardLoggedIn(profile: null),
+                            data: (profile) => _ProfileCardLoggedIn(profile: profile),
+                          )
                         : const _ProfileCardGuest(),
                     const SizedBox(height: 32),
                     Text('나의 활동', style: AppTextStyles.headlineMd),
@@ -175,9 +181,40 @@ class _ProfileCardGuest extends StatelessWidget {
   }
 }
 
+class _ProfileCardLoading extends StatelessWidget {
+  const _ProfileCardLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 208,
+      decoration: BoxDecoration(
+        color: _glassPanelColor,
+        borderRadius: BorderRadius.circular(_cardRadius),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      alignment: Alignment.center,
+      child: const CircularProgressIndicator(color: AppColors.moonlightGold),
+    );
+  }
+}
+
+String _loginProviderLabel(String provider) {
+  switch (provider) {
+    case 'apple':
+      return 'Apple로 로그인함';
+    case 'kakao':
+      return '카카오로 로그인함';
+    case 'naver':
+      return '네이버로 로그인함';
+    default:
+      return '$provider로 로그인함';
+  }
+}
+
 class _ProfileCardLoggedIn extends StatelessWidget {
-  const _ProfileCardLoggedIn({required this.summary});
-  final MyPageSummary summary;
+  const _ProfileCardLoggedIn({required this.profile});
+  final ProfileDto? profile;
 
   @override
   Widget build(BuildContext context) {
@@ -221,31 +258,35 @@ class _ProfileCardLoggedIn extends StatelessWidget {
             Column(
               children: [
                 const SizedBox(height: 8),
-                _Avatar(avatarUrl: summary.avatarUrl),
+                _Avatar(avatarUrl: profile?.avatarUrl),
                 const SizedBox(height: 16),
-                Text(summary.nickname, style: AppTextStyles.headlineLg),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.background.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppColors.glassBorder),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.verified, size: 16, color: AppColors.onSurface),
-                      const SizedBox(width: 6),
-                      Text(
-                        summary.loginProviderLabel,
-                        style: AppTextStyles.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
+                Text(
+                  profile?.nickname ?? '달빛수원 회원',
+                  style: AppTextStyles.headlineLg,
                 ),
+                const SizedBox(height: 8),
+                if (profile != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.background.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: AppColors.glassBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.verified, size: 16, color: AppColors.onSurface),
+                        const SizedBox(width: 6),
+                        Text(
+                          _loginProviderLabel(profile!.provider),
+                          style: AppTextStyles.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
               ],
             ),
           ],

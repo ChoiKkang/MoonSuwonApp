@@ -144,6 +144,24 @@ class AuthRepositorySupabase implements AuthRepository {
     await _client.auth.signOut();
   }
 
+  @override
+  Future<ProfileDto?> fetchCurrentProfileAsync() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+    try {
+      final row = await _client
+          .from('profiles')
+          .select()
+          .eq('id', user.id)
+          .maybeSingle();
+      if (row == null) return null;
+      return ProfileDto.fromJson(row);
+    } catch (e, st) {
+      AppLogger.error('프로필 조회 실패', error: e, stackTrace: st);
+      return null;
+    }
+  }
+
   Future<void> _updateAuthEmailAsync(String? email) async {
     if (email == null || email.isEmpty) return;
     final currentEmail = _client.auth.currentUser?.email;
