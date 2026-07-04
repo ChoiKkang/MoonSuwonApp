@@ -15,6 +15,8 @@ import 'package:dalbit_suwon/features/spot/ui/spot_detail_page.dart'
     show SpotDetailPage;
 import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart'
     show AuthLoginPage;
+import 'package:dalbit_suwon/features/mypage/ui/mypage_page.dart'
+    show MyPagePage;
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(this._ref) {
@@ -60,6 +62,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) =>
             SpotDetailPage(spotId: state.pathParameters['id']!),
       ),
+      GoRoute(path: '/mypage', builder: (context, state) => const MyPagePage()),
     ],
     errorBuilder: (context, state) =>
         Scaffold(body: Center(child: Text('페이지를 찾을 수 없습니다: ${state.error}'))),
