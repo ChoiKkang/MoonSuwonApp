@@ -39,10 +39,15 @@ class AuthRepositorySupabase implements AuthRepository {
     }
 
     AppLogger.auth('Supabase signInWithIdToken 요청');
-    await _client.auth.signInWithIdToken(
-      provider: OAuthProvider.kakao,
-      idToken: idToken,
-    );
+    try {
+      await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.kakao,
+        idToken: idToken,
+      );
+    } catch (e, st) {
+      AppLogger.error('Supabase signInWithIdToken 실패', error: e, stackTrace: st);
+      rethrow;
+    }
     AppLogger.auth('Supabase 로그인 성공', data: _client.auth.currentUser?.id);
 
     String? kakaoEmail;
