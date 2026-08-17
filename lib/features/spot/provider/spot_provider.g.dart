@@ -23,7 +23,27 @@ final spotRepositoryProvider = AutoDisposeProvider<SpotRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SpotRepositoryRef = AutoDisposeProviderRef<SpotRepository>;
-String _$spotDetailHash() => r'203861a5e3fc6676e4b6ffa9526b80a8dbfa8df5';
+String _$spotRepositorySupabaseHash() =>
+    r'b2cd28ee4fdf587e4b1216f7844838a8f191299a';
+
+/// See also [spotRepositorySupabase].
+@ProviderFor(spotRepositorySupabase)
+final spotRepositorySupabaseProvider =
+    AutoDisposeProvider<SpotRepositorySupabase>.internal(
+      spotRepositorySupabase,
+      name: r'spotRepositorySupabaseProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$spotRepositorySupabaseHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SpotRepositorySupabaseRef =
+    AutoDisposeProviderRef<SpotRepositorySupabase>;
+String _$spotDetailHash() => r'3d56fa6769358084bd83978679b437d518edbc24';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -163,5 +183,23 @@ class _SpotDetailProviderElement
   String get spotId => (origin as SpotDetailProvider).spotId;
 }
 
+String _$nowGoodSpotsHash() => r'b1430fcf24e036eb5494996908b7474073033d6f';
+
+/// See also [nowGoodSpots].
+@ProviderFor(nowGoodSpots)
+final nowGoodSpotsProvider =
+    AutoDisposeFutureProvider<List<SpotSummary>>.internal(
+      nowGoodSpots,
+      name: r'nowGoodSpotsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$nowGoodSpotsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef NowGoodSpotsRef = AutoDisposeFutureProviderRef<List<SpotSummary>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
