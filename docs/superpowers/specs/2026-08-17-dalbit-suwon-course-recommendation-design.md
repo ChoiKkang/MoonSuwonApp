@@ -107,6 +107,20 @@ UPDATE editorial.course_publish_state SET is_published = true, display_priority 
 
 `CourseSummary`/`CourseDetail`/`Spot` freezed 모델은 필드 변경 없이 그대로 사용한다.
 
+## 기존 RPC 재사용 검토
+
+새 RPC를 추가하기 전에 기존 자산으로 대체 가능한지 점검했다.
+
+| 필요 기능 | 기존 자산으로 충족 가능? | 결론 |
+|---|---|---|
+| 코스 상세 조회 (id 기반) | `public.get_course_detail(uuid)` — 이미 완전히 구현됨 | **그대로 재사용**. 신규 작성 없음. `CourseRepositorySupabase.fetchCourseDetailAsync`는 이 RPC만 호출한다. |
+| 코스 상세 조회 (slug 기반, 웹 SSR) | `public.get_course_by_slug(text)` — 이미 완전히 구현됨 | 이번 스코프에서 사용하지 않지만 손댈 필요 없음 |
+| 홈 코스 목록 조회 | 없음 — `get_course_detail`/`get_course_by_slug`는 단건 전용이라 목록에 재사용 불가, `get_now_good_spots`는 스팟 도메인이라 무관 | **신규 함수 1개 필요** (`get_home_courses`). 단, 그 안에서 참조하는 `serving.v_home_courses` 뷰는 `007_serving_views.sql`에 이미 존재하므로 뷰는 재사용하고 얇은 래퍼 함수만 추가한다 |
+| `serving` 스키마 접근 권한 | `GRANT USAGE ON SCHEMA serving`, `GRANT SELECT ON ALL TABLES IN SCHEMA serving TO anon, authenticated` — `007_serving_views.sql`에 이미 존재 | **재사용**. `get_home_courses`를 위한 별도 스키마/뷰 권한 부여 불필요. 함수 자체에 대한 `GRANT EXECUTE`만 추가 |
+| RPC 반환 형태 | `get_course_detail`은 중첩 배열(스팟 목록)이 필요해 `json`/`json_build_object`를 쓴다. 홈 목록은 평평한 행 구조(스칼라 컬럼만)라 이 패턴이 맞지 않는다 | `get_now_good_spots`와 동일하게 `RETURNS TABLE` + `SECURITY INVOKER` + `SET search_path=''` 패턴을 재사용한다. 두 반환 패턴은 대체재가 아니라 각각 단건/목록이라는 다른 요구사항에 이미 맞게 나뉘어 있다 |
+
+결과적으로 이번 마이그레이션에서 **완전히 새로 작성하는 것은 `get_home_courses` 함수 본문과 시드 데이터뿐**이며, 뷰·권한·상세 조회 RPC·보안 패턴은 모두 기존 자산을 재사용한다.
+
 ## 에러 처리
 
 - `get_home_courses`가 빈 배열을 반환하면 (발행된 코스 없음) `home_page.dart`의 기존 `coursesAsync.when` 패턴이 이미 `error`/`data` 분기를 처리하므로 별도 방어 코드는 불필요하다. 다만 빈 리스트일 때 `_CourseCardList`가 빈 화면을 렌더링하지 않도록 now-good-spot 섹션과 동일하게 "추천 코스가 없어요" 안내를 추가한다.
