@@ -15,8 +15,6 @@ import 'package:dalbit_suwon/features/spot/data/models/spot_summary.dart'
     show SpotSummary;
 import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
     show nowGoodSpotsProvider;
-import 'package:dalbit_suwon/shared/widgets/app_bottom_nav.dart'
-    show AppBottomNav, AppBottomNavTab;
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -55,7 +53,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                   const SizedBox(height: 24),
                   _HeroSection(),
                   const SizedBox(height: 32),
-                  _SectionHeader(title: '추천 데이트 코스', actionLabel: '모두 보기'),
+                  _SectionHeader(
+                    title: '추천 데이트 코스',
+                    actionLabel: '모두 보기',
+                    onActionTap: () => context.push('/courses'),
+                  ),
                   const SizedBox(height: 16),
                 ]),
               ),
@@ -88,7 +90,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: const AppBottomNav(currentTab: AppBottomNavTab.home),
+      // GNB(하단 네비게이션)는 홈 화면에서 hidden 처리한다.
+      // 홈은 콘텐츠 몰입에 집중하고, 다른 탭 접근은 홈 외 화면(마이/찜/내 주변)에서만 노출한다.
     );
   }
 }
@@ -144,9 +147,14 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.actionLabel});
+  const _SectionHeader({
+    required this.title,
+    this.actionLabel,
+    this.onActionTap,
+  });
   final String title;
   final String? actionLabel;
+  final VoidCallback? onActionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -155,10 +163,18 @@ class _SectionHeader extends StatelessWidget {
         Text(title, style: AppTextStyles.headlineMd),
         const Spacer(),
         if (actionLabel != null)
-          Text(
-            '$actionLabel >',
-            style: AppTextStyles.labelMd.copyWith(
-              color: AppColors.onSurfaceVariant,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onActionTap,
+            child: Padding(
+              // 터치 영역 확보 (44pt 이상 권장)
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Text(
+                '$actionLabel >',
+                style: AppTextStyles.labelMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
             ),
           ),
       ],
