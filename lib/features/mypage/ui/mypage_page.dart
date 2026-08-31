@@ -19,7 +19,8 @@ import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles
 import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show authNotifierProvider, currentProfileProvider;
-import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
+import 'package:dalbit_suwon/features/course/data/models/course_progress_dto.dart'
+    show CourseHistoryEntryDto;
 import 'package:dalbit_suwon/features/favorite/provider/favorite_provider.dart'
     show favoriteCoursesProvider, favoriteSpotsProvider;
 import 'package:dalbit_suwon/features/mypage/data/models/mypage_summary.dart'
@@ -351,12 +352,56 @@ class _Avatar extends StatelessWidget {
 
 class _RecentCourseCard extends StatelessWidget {
   const _RecentCourseCard({required this.course});
-  final CourseSummary course;
+  final CourseHistoryEntryDto course;
+
+  /// 진행 상태에 따른 CTA 라벨.
+  /// - in_progress: 이어서 진행 유도
+  /// - completed:   완주 요약 화면으로 유도
+  /// - abandoned/기타: 코스 상세로 되돌려 재시작 유도
+  String get _actionLabel {
+    switch (course.status) {
+      case 'in_progress':
+        return '계속하기';
+      case 'completed':
+        return '완주 보기';
+      default:
+        return '다시 보기';
+    }
+  }
+
+  /// 진행 상태별 이동 경로. 코스 스팟 UUID가 아닌 코스 UUID를 사용한다.
+  String get _targetPath {
+    switch (course.status) {
+      case 'in_progress':
+        return '/course/${course.courseId}/progress';
+      case 'completed':
+        return '/course/${course.courseId}/complete';
+      default:
+        return '/course/${course.courseId}';
+    }
+  }
+
+  /// 진행률 서브텍스트. spot_count가 0이면 표시하지 않는다.
+  String? get _progressLabel {
+    if (course.spotCount <= 0) return null;
+    switch (course.status) {
+      case 'completed':
+        return '완주 · ${course.spotCount}개 스팟';
+      case 'abandoned':
+        return '중단됨 · ${course.checkinCount}/${course.spotCount} 스팟';
+      case 'in_progress':
+      default:
+        return '${course.checkinCount}/${course.spotCount} 스팟 진행 중';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final heroImageUrl = course.heroImageUrl;
+    final subtitle = _progressLabel;
+
     return GestureDetector(
-      onTap: () => context.push('/course/${course.id}/progress'),
+      onTap: () => context.push(_targetPath),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(_cardRadius),
         child: SizedBox(
@@ -364,13 +409,16 @@ class _RecentCourseCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.network(
-                course.heroImageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Container(
-                  color: AppColors.surfaceContainerHigh,
-                ),
-              ),
+              if (heroImageUrl != null && heroImageUrl.isNotEmpty)
+                Image.network(
+                  heroImageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    color: AppColors.surfaceContainerHigh,
+                  ),
+                )
+              else
+                Container(color: AppColors.surfaceContainerHigh),
               DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -406,19 +454,22 @@ class _RecentCourseCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                course.title,
+                                course.heroTitle.isEmpty
+                                    ? '진행한 코스'
+                                    : course.heroTitle,
                                 style: AppTextStyles.headlineMd.copyWith(
                                   color: Colors.white,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              Text(
-                                '${course.walkingDistanceKm}km 남음',
-                                style: AppTextStyles.labelSm.copyWith(
-                                  color: AppColors.onSurfaceVariant,
+                              if (subtitle != null)
+                                Text(
+                                  subtitle,
+                                  style: AppTextStyles.labelSm.copyWith(
+                                    color: AppColors.onSurfaceVariant,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -438,7 +489,7 @@ class _RecentCourseCard extends StatelessWidget {
                             ],
                           ),
                           child: Text(
-                            '계속하기',
+                            _actionLabel,
                             style: AppTextStyles.labelMd.copyWith(
                               color: AppColors.background,
                             ),

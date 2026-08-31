@@ -8,7 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show AuthNotifier, authNotifierProvider, currentProfileProvider;
-import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
+import 'package:dalbit_suwon/features/course/data/models/course_progress_dto.dart'
+    show CourseHistoryEntryDto;
 import 'package:dalbit_suwon/features/favorite/data/favorite_repository.dart'
     show FavoriteRepository, FavoriteTarget;
 import 'package:dalbit_suwon/features/favorite/data/models/favorite_course_summary.dart'
@@ -75,16 +76,18 @@ final _testProfile = ProfileDto(
 );
 
 const _summary = MyPageSummary(
-  recentCourse: CourseSummary(
-    id: 'course-date-01',
-    title: '화성행궁 밤길 산책',
+  recentCourse: CourseHistoryEntryDto(
+    progressId: '00000000-0000-0000-0000-000000000001',
+    courseId: '00000000-0000-0000-0000-0000000000c0',
+    courseSlug: 'course-date-01',
+    heroTitle: '화성행궁 밤길 산책',
     subtitle: '첫 방문자를 위한 야경 입문 코스',
-    estimatedDurationMin: 90,
-    walkingDistanceKm: 1.2,
-    recommendedStartTime: '18:30',
-    spotCount: 4,
     heroImageUrl: 'https://example.com/image.png',
-    themeTags: ['date'],
+    status: 'in_progress',
+    checkinCount: 2,
+    spotCount: 4,
+    walkingDistanceKm: 1.2,
+    estimatedDurationMin: 90,
   ),
 );
 
