@@ -2,9 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dalbit_suwon/features/auth/data/auth_repository.dart' show AuthRepository;
-import 'package:dalbit_suwon/features/auth/data/auth_repository_supabase.dart' show AuthRepositorySupabase;
-import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
+import 'package:dalbit_suwon/features/auth/data/auth_repository.dart'
+    show AuthRepository;
+import 'package:dalbit_suwon/features/auth/data/auth_repository_supabase.dart'
+    show AuthRepositorySupabase;
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart'
+    show ProfileDto;
 
 part 'auth_provider.g.dart';
 
@@ -32,10 +35,6 @@ class AuthNotifier extends _$AuthNotifier {
 
   Future<void> loginWithKakaoAsync() async {
     await ref.read(authRepositoryProvider).loginWithKakaoAsync();
-  }
-
-  Future<void> loginWithNaverAsync() async {
-    await ref.read(authRepositoryProvider).loginWithNaverAsync();
   }
 
   Future<void> loginWithAppleAsync() async {

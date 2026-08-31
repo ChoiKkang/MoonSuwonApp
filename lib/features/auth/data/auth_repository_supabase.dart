@@ -45,7 +45,11 @@ class AuthRepositorySupabase implements AuthRepository {
         idToken: idToken,
       );
     } catch (e, st) {
-      AppLogger.error('Supabase signInWithIdToken 실패', error: e, stackTrace: st);
+      AppLogger.error(
+        'Supabase signInWithIdToken 실패',
+        error: e,
+        stackTrace: st,
+      );
       rethrow;
     }
     AppLogger.auth('Supabase 로그인 성공', data: _client.auth.currentUser?.id);
@@ -71,11 +75,6 @@ class AuthRepositorySupabase implements AuthRepository {
     }
     await _upsertProfileAsync(provider: 'kakao', providerEmail: kakaoEmail);
     if (emailConflict != null) throw emailConflict;
-  }
-
-  @override
-  Future<void> loginWithNaverAsync() async {
-    throw UnimplementedError('네이버 로그인은 준비 중입니다.');
   }
 
   @override

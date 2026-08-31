@@ -205,8 +205,6 @@ String _loginProviderLabel(String provider) {
       return 'Apple로 로그인함';
     case 'kakao':
       return '카카오로 로그인함';
-    case 'naver':
-      return '네이버로 로그인함';
     default:
       return '$provider로 로그인함';
   }

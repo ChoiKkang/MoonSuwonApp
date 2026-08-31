@@ -100,6 +100,13 @@ void main() {
       expect(find.text('홈'), findsOneWidget);
       expect(find.byType(KakaoLoginButton), findsNothing);
     });
+
+    testWidgets('네이버 로그인 버튼은 노출되지 않는다', (tester) async {
+      await tester.pumpWidget(_buildApp());
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('네이버'), findsNothing);
+    });
   });
 
   group('AuthLoginPage Apple 로그인', () {

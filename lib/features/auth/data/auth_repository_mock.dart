@@ -1,5 +1,7 @@
-import 'package:dalbit_suwon/features/auth/data/auth_repository.dart' show AuthRepository;
-import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
+import 'package:dalbit_suwon/features/auth/data/auth_repository.dart'
+    show AuthRepository;
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart'
+    show ProfileDto;
 
 class AuthRepositoryMock implements AuthRepository {
   bool _loggedIn = false;
@@ -9,12 +11,6 @@ class AuthRepositoryMock implements AuthRepository {
 
   @override
   Future<void> loginWithKakaoAsync() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    _loggedIn = true;
-  }
-
-  @override
-  Future<void> loginWithNaverAsync() async {
     await Future.delayed(const Duration(milliseconds: 500));
     _loggedIn = true;
   }

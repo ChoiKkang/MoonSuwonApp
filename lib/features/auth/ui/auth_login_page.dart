@@ -29,30 +29,14 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
       if (mounted) context.go('/');
     } on EmailAlreadyInUseException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이미 가입된 계정입니다.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('이미 가입된 계정입니다.')));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('카카오 로그인에 실패했습니다. 다시 시도해 주세요.')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => loading = false);
-    }
-  }
-
-  Future<void> _onLoginWithNaverAsync() async {
-    setState(() => loading = true);
-    try {
-      await ref.read(authNotifierProvider.notifier).loginWithNaverAsync();
-      if (mounted) context.go('/');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('네이버 로그인에 실패했습니다. 다시 시도해 주세요.')),
         );
       }
     } finally {
@@ -118,14 +102,6 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
               const Spacer(),
               KakaoLoginButton(
                 onPressed: loading ? null : _onLoginWithKakaoAsync,
-              ),
-              const SizedBox(height: 12),
-              _SocialLoginButton(
-                label: '네이버로 시작하기',
-                backgroundColor: const Color(0xFF03C75A),
-                foregroundColor: Colors.white,
-                icon: Icons.grid_view_rounded,
-                onPressed: loading ? null : _onLoginWithNaverAsync,
               ),
               const SizedBox(height: 12),
               _SocialLoginButton(
