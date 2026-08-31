@@ -83,7 +83,14 @@ class CourseProgressState {
 @riverpod
 class CourseProgressNotifier extends _$CourseProgressNotifier {
   @override
-  CourseProgressState build() => const CourseProgressState.idle();
+  CourseProgressState build() {
+    // 코스 시작 → 진행 → 완료 흐름은 여러 페이지에 걸쳐 있고,
+    // 각 페이지가 이 프로바이더를 항상 watch하지는 않는다 (예: 코스 상세는 ref.read만).
+    // AutoDispose 기본값이면 첫 RPC 대기 중에 dispose되어 상태 갱신이 폭발하므로
+    // 세션 전 구간에서 강제로 keepAlive 시킨다. reset()으로 명시적으로 초기화한다.
+    ref.keepAlive();
+    return const CourseProgressState.idle();
+  }
 
   bool get _isLoggedIn {
     // Supabase 세션이 살아 있으면 서버 저장 대상이다.
