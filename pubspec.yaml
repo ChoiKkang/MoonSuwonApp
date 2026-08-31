@@ -34,6 +34,9 @@ dependencies:
   # 위치 (권한 요청 + 현재 위치)
   geolocator: ^14.0.3
 
+  # 로컬 저장 (게스트 상태의 찜 목록 등)
+  shared_preferences: ^2.3.3
+
   # 인증
   supabase_flutter: ^2.9.0
   kakao_flutter_sdk_user: ^1.9.7
@@ -47,6 +50,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+  # 테스트: FavoriteRepositoryLocal의 SharedPreferencesAsync in-memory mock
+  shared_preferences_platform_interface: ^2.4.2
 
   # 코드 생성
   build_runner: ^2.4.13

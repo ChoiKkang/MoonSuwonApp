@@ -2,12 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dalbit_suwon/features/favorite/data/favorite_repository.dart'
+    show FavoriteRepository, FavoriteTarget;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_course_summary.dart'
+    show FavoriteCourseSummary;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_spot_summary.dart'
+    show FavoriteSpotSummary;
+import 'package:dalbit_suwon/features/favorite/provider/favorite_provider.dart'
+    show favoriteRepositoryProvider;
 import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart'
     show SpotDetail;
 import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
     show spotDetailProvider;
 import 'package:dalbit_suwon/features/spot/ui/spot_detail_page.dart'
     show SpotDetailPage;
+
+/// FavoriteToggleButton이 provider를 watch하므로 테스트 격리를 위해 최소 fake 저장소.
+class _FakeFavoriteRepository implements FavoriteRepository {
+  @override
+  Future<List<FavoriteSpotSummary>> fetchFavoriteSpotsAsync() async =>
+      const [];
+
+  @override
+  Future<List<FavoriteCourseSummary>> fetchFavoriteCoursesAsync() async =>
+      const [];
+
+  @override
+  Future<void> addSpotAsync(FavoriteSpotSummary spot) async {}
+
+  @override
+  Future<void> addCourseAsync(FavoriteCourseSummary course) async {}
+
+  @override
+  Future<void> removeAsync(FavoriteTarget target) async {}
+}
 
 void main() {
   testWidgets('hides empty live editorial sections from the spot detail page', (
@@ -38,6 +66,9 @@ void main() {
           spotDetailProvider(
             'seojangdae',
           ).overrideWith((ref) async => sparseDetail),
+          favoriteRepositoryProvider.overrideWithValue(
+            _FakeFavoriteRepository(),
+          ),
         ],
         child: const MaterialApp(home: SpotDetailPage(spotId: 'seojangdae')),
       ),

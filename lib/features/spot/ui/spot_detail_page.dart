@@ -6,6 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
     show AppTextStyles;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_spot_summary.dart'
+    show FavoriteSpotSummary;
+import 'package:dalbit_suwon/features/favorite/ui/widgets/favorite_toggle_button.dart'
+    show FavoriteToggleButton;
 import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart'
     show SpotDetail, LocalSpot;
 import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
@@ -32,15 +36,16 @@ class SpotDetailPage extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.moonlightGold),
         ),
         error: (e, _) => Center(child: Text('오류: $e')),
-        data: (detail) => _SpotDetailContent(detail: detail),
+        data: (detail) => _SpotDetailContent(detail: detail, spotId: spotId),
       ),
     );
   }
 }
 
 class _SpotDetailContent extends StatelessWidget {
-  const _SpotDetailContent({required this.detail});
+  const _SpotDetailContent({required this.detail, required this.spotId});
   final SpotDetail detail;
+  final String spotId;
 
   Future<void> _openKakaoMap(SpotDetail detail) async {
     final uri = Uri.parse('kakaomap://look?p=${detail.lat},${detail.lng}');
@@ -75,9 +80,17 @@ class _SpotDetailContent extends StatelessWidget {
                           icon: Icons.arrow_back,
                           onPressed: () => context.pop(),
                         ),
-                        GlassIconButton(
-                          icon: Icons.favorite_outline,
-                          onPressed: () {},
+                        FavoriteToggleButton.spot(
+                          spot: FavoriteSpotSummary(
+                            placeId: detail.id,
+                            slug: spotId,
+                            name: detail.name,
+                            category: detail.category,
+                            heroImageUrl: detail.heroImageUrl,
+                            nightHighlight: detail.nightHighlight.isEmpty
+                                ? null
+                                : detail.nightHighlight,
+                          ),
                         ),
                       ],
                     ),

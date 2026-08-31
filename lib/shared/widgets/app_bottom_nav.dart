@@ -31,8 +31,9 @@ class AppBottomNav extends StatelessWidget {
         context.go('/');
       case AppBottomNavTab.my:
         context.go('/mypage');
-      case AppBottomNavTab.nearby:
       case AppBottomNavTab.bookmarks:
+        context.go('/bookmarks');
+      case AppBottomNavTab.nearby:
         break;
     }
   }

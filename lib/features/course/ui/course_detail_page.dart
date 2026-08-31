@@ -7,6 +7,10 @@ import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseDetail;
 import 'package:dalbit_suwon/features/course/data/models/spot.dart' show Spot;
 import 'package:dalbit_suwon/features/course/provider/course_provider.dart' show courseDetailProvider;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_course_summary.dart'
+    show FavoriteCourseSummary;
+import 'package:dalbit_suwon/features/favorite/ui/widgets/favorite_toggle_button.dart'
+    show FavoriteToggleButton;
 import 'package:dalbit_suwon/shared/widgets/glass_icon_button.dart' show GlassIconButton;
 import 'package:dalbit_suwon/shared/widgets/hero_image_header.dart' show HeroImageHeader;
 import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart' show MoonlightCtaBar;
@@ -26,15 +30,16 @@ class CourseDetailPage extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.moonlightGold),
         ),
         error: (e, _) => Center(child: Text('오류: $e')),
-        data: (detail) => _CourseDetailContent(detail: detail),
+        data: (detail) => _CourseDetailContent(detail: detail, courseId: courseId),
       ),
     );
   }
 }
 
 class _CourseDetailContent extends StatelessWidget {
-  const _CourseDetailContent({required this.detail});
+  const _CourseDetailContent({required this.detail, required this.courseId});
   final CourseDetail detail;
+  final String courseId;
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +62,18 @@ class _CourseDetailContent extends StatelessWidget {
                           icon: Icons.arrow_back,
                           onPressed: () => context.pop(),
                         ),
-                        GlassIconButton(
-                          icon: Icons.bookmark_outline,
-                          onPressed: () {},
+                        FavoriteToggleButton.course(
+                          course: FavoriteCourseSummary(
+                            courseId: detail.id,
+                            slug: courseId,
+                            title: detail.title,
+                            subtitle: detail.subtitle,
+                            routeSummary: detail.description,
+                            estimatedDurationMin: detail.estimatedDurationMin,
+                            spotCount: detail.spots.length,
+                            heroImageUrl: detail.heroImageUrl,
+                            themeTags: detail.themeTags,
+                          ),
                         ),
                       ],
                     ),

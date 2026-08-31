@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show authNotifierProvider;
+import 'package:dalbit_suwon/features/favorite/ui/favorite_page.dart'
+    show FavoritePage;
 import 'package:dalbit_suwon/features/home/ui/home_page.dart' show HomePage;
 import 'package:dalbit_suwon/features/course/ui/course_detail_page.dart'
     show CourseDetailPage;
@@ -63,6 +65,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             SpotDetailPage(spotId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/mypage', builder: (context, state) => const MyPagePage()),
+      GoRoute(
+        path: '/bookmarks',
+        builder: (context, state) => const FavoritePage(),
+      ),
     ],
     errorBuilder: (context, state) =>
         Scaffold(body: Center(child: Text('페이지를 찾을 수 없습니다: ${state.error}'))),
