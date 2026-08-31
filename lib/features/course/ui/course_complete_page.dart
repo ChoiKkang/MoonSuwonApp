@@ -1,3 +1,4 @@
+import 'dart:io' show File;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -72,18 +73,26 @@ class _CourseCompletePageState extends ConsumerState<CourseCompletePage> {
       final safeTitle = detail.title
           .replaceAll(RegExp(r'[^a-zA-Z0-9가-힣]'), '_')
           .toLowerCase();
-      final file = XFile.fromData(
-        bytes,
-        name: 'dalbit_suwon_${safeTitle}_'
-            '${DateTime.now().millisecondsSinceEpoch}.png',
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath =
+          '${tempDir.path}/dalbit_suwon_${safeTitle}_$timestamp.png';
+
+      // XFile.fromData(bytes, path: ...) 는 실제 디스크에 파일을 쓰지 않고
+      // 메모리에만 유지한다. iOS 공유 시트는 path를 우선 참조하므로 그 경로에
+      // 실제 파일이 없으면 "이미지 저장" 결과가 0KB가 된다.
+      // 반드시 File.writeAsBytes로 디스크에 먼저 기록한 뒤 XFile 을 생성한다.
+      final tempFile = File(filePath);
+      await tempFile.writeAsBytes(bytes, flush: true);
+
+      final xfile = XFile(
+        tempFile.path,
+        name: 'dalbit_suwon_${safeTitle}_$timestamp.png',
         mimeType: 'image/png',
-        path: '${tempDir.path}/dalbit_suwon_completion_'
-            '${DateTime.now().millisecondsSinceEpoch}.png',
       );
 
       await SharePlus.instance.share(
         ShareParams(
-          files: [file],
+          files: [xfile],
           // 주의: text/subject를 함께 전달하면 iOS 공유 시트가 텍스트를 우선
           // 처리해 "이미지 저장" 선택 시 이미지 대신 텍스트가 저장되는 문제가 있다.
           // 파일만 전달해 이미지가 저장 대상으로 확실히 인식되도록 한다.
