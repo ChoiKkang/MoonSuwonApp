@@ -21,9 +21,11 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
   @override
   Future<SpotDetail> fetchSpotDetailAsync(String slug) async {
     final query = PlaceBySlugQueryDto(slug);
-    final row =
-        await _client.rpc('get_place_by_slug', params: query.toJson()) as Map;
-    final place = PlaceBySlugDto.fromJson(Map<String, dynamic>.from(row));
+    final row = await _client.rpc('get_place_by_slug', params: query.toJson());
+    if (row == null) {
+      throw StateError('스팟을 찾을 수 없습니다 (slug=$slug).');
+    }
+    final place = PlaceBySlugDto.fromJson(Map<String, dynamic>.from(row as Map));
 
     return SpotDetail(
       id: place.id,
