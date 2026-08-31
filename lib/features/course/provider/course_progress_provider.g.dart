@@ -7,12 +7,15 @@ part of 'course_progress_provider.dart';
 // **************************************************************************
 
 String _$courseProgressNotifierHash() =>
-    r'91952d1eb8548ed8a28e5aa888092b1498ccbfd0';
+    r'fcb802862b02d1ab4de44d95d2c05eabf593b813';
 
 /// See also [CourseProgressNotifier].
 @ProviderFor(CourseProgressNotifier)
 final courseProgressNotifierProvider =
-    AutoDisposeNotifierProvider<CourseProgressNotifier, int>.internal(
+    AutoDisposeNotifierProvider<
+      CourseProgressNotifier,
+      CourseProgressState
+    >.internal(
       CourseProgressNotifier.new,
       name: r'courseProgressNotifierProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,7 +25,7 @@ final courseProgressNotifierProvider =
       allTransitiveDependencies: null,
     );
 
-typedef _$CourseProgressNotifier = AutoDisposeNotifier<int>;
+typedef _$CourseProgressNotifier = AutoDisposeNotifier<CourseProgressState>;
 String _$arrivalModalNotifierHash() =>
     r'10f1e57b02cd0f74e720c43ca02ed8d64ebf11c1';
 

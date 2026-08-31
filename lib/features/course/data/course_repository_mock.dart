@@ -2,6 +2,12 @@ import 'package:dalbit_suwon/features/course/data/course_repository.dart'
     show CourseRepository;
 import 'package:dalbit_suwon/features/course/data/models/course.dart'
     show CourseSummary, CourseDetail;
+import 'package:dalbit_suwon/features/course/data/models/course_progress_dto.dart'
+    show
+        CheckinMode,
+        CheckinResult,
+        CourseHistoryEntryDto,
+        CourseProgressSessionDto;
 import 'package:dalbit_suwon/features/course/data/models/spot.dart' show Spot;
 
 /// 로컬(Mock) 코스/스팟 데이터.
@@ -233,5 +239,79 @@ class CourseRepositoryMock implements CourseRepository {
       spots: spots,
       petReadyFlag: summary.petReadyFlag,
     );
+  }
+
+  // ── 진행률 관련은 Mock에서는 in-memory 스텁만 제공한다.
+  //    실제 서버 반영은 CourseRepositorySupabase가 담당한다.
+
+  int _mockProgressCounter = 0;
+
+  @override
+  Future<CourseProgressSessionDto> startCourseProgressAsync(
+    String courseId,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+    _mockProgressCounter += 1;
+    final now = DateTime.now();
+    final progressId =
+        'mock-progress-${now.microsecondsSinceEpoch}-$_mockProgressCounter';
+    return CourseProgressSessionDto(
+      progressId: progressId,
+      courseId: courseId,
+      status: 'in_progress',
+      startedAt: now,
+      spotCount: _spotsByCourse[courseId]?.length ?? 0,
+    );
+  }
+
+  @override
+  Future<CourseProgressSessionDto> completeCourseProgressAsync(
+    String progressId,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+    final now = DateTime.now();
+    return CourseProgressSessionDto(
+      progressId: progressId,
+      courseId: 'course-date-01',
+      status: 'completed',
+      startedAt: now.subtract(const Duration(minutes: 90)),
+      completedAt: now,
+      checkinCount: 4,
+      spotCount: 4,
+      isPerfect: true,
+    );
+  }
+
+  @override
+  Future<void> abandonCourseProgressAsync(String progressId) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+  }
+
+  @override
+  Future<CourseProgressSessionDto?> getActiveCourseProgressAsync(
+    String courseId,
+  ) async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return null;
+  }
+
+  @override
+  Future<CheckinResult> checkinCoursePlaceAsync({
+    required String progressId,
+    required String placeId,
+    required CheckinMode mode,
+    double? lat,
+    double? lng,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+    return CheckinResult.success;
+  }
+
+  @override
+  Future<List<CourseHistoryEntryDto>> listUserCourseHistoryAsync({
+    int limit = 20,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 150));
+    return const [];
   }
 }

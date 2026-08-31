@@ -7,6 +7,8 @@ import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseDetail;
 import 'package:dalbit_suwon/features/course/data/models/spot.dart' show Spot;
 import 'package:dalbit_suwon/features/course/provider/course_provider.dart' show courseDetailProvider;
+import 'package:dalbit_suwon/features/course/provider/course_progress_provider.dart'
+    show courseProgressNotifierProvider;
 import 'package:dalbit_suwon/features/favorite/data/models/favorite_course_summary.dart'
     show FavoriteCourseSummary;
 import 'package:dalbit_suwon/features/favorite/ui/widgets/favorite_toggle_button.dart'
@@ -105,15 +107,26 @@ class _CourseDetailContent extends StatelessWidget {
           bottom: 0,
           left: 0,
           right: 0,
-          child: MoonlightCtaBar(
-            label: '코스 시작하기',
-            icon: Icons.play_arrow_rounded,
-            onPressed: () =>
-                context.push('/course/${detail.id}/progress'),
+          child: Consumer(
+            builder: (context, ref, _) => MoonlightCtaBar(
+              label: '코스 시작하기',
+              icon: Icons.play_arrow_rounded,
+              onPressed: () => _onStartCourseAsync(context, ref),
+            ),
           ),
         ),
       ],
     );
+  }
+
+  Future<void> _onStartCourseAsync(BuildContext context, WidgetRef ref) async {
+    // 서버에 코스 시작을 기록한 뒤 진행 화면으로 이동한다.
+    // 게스트는 로컬 세션만 시작하고 그대로 진행 화면으로 이동한다.
+    final router = GoRouter.of(context);
+    await ref
+        .read(courseProgressNotifierProvider.notifier)
+        .startCourseAsync(courseId: detail.id, spots: detail.spots);
+    router.push('/course/${detail.id}/progress');
   }
 }
 
