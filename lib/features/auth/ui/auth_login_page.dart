@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart'
+    show
+        AuthorizationErrorCode,
+        SignInWithAppleAuthorizationException,
+        SignInWithAppleNotSupportedException;
 
+import 'package:dalbit_suwon/core/logger/app_logger.dart' show AppLogger;
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
     show AppTextStyles;
@@ -22,23 +28,25 @@ class AuthLoginPage extends ConsumerStatefulWidget {
 class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
   bool loading = false;
 
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 6)),
+      );
+  }
+
   Future<void> _onLoginWithKakaoAsync() async {
     setState(() => loading = true);
     try {
       await ref.read(authNotifierProvider.notifier).loginWithKakaoAsync();
       if (mounted) context.go('/');
     } on EmailAlreadyInUseException {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('이미 가입된 계정입니다.')));
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('카카오 로그인에 실패했습니다. 다시 시도해 주세요.')),
-        );
-      }
+      _showSnack('이미 가입된 계정입니다.');
+    } catch (e, st) {
+      AppLogger.error('카카오 로그인 실패', error: e, stackTrace: st);
+      _showSnack('카카오 로그인 실패: ${e.runtimeType} — $e');
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -49,12 +57,24 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
     try {
       await ref.read(authNotifierProvider.notifier).loginWithAppleAsync();
       if (mounted) context.go('/');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Apple 로그인에 실패했습니다. 다시 시도해 주세요.')),
-        );
+    } on SignInWithAppleAuthorizationException catch (e, st) {
+      // 사용자가 Apple 로그인 시트에서 취소한 경우는 정상 흐름으로 처리한다.
+      if (e.code == AuthorizationErrorCode.canceled) {
+        AppLogger.auth('Apple 로그인 사용자 취소');
+        return;
       }
+      AppLogger.error(
+        'Apple 로그인 실패 (code=${e.code}, message=${e.message})',
+        error: e,
+        stackTrace: st,
+      );
+      _showSnack('Apple 로그인 실패: ${e.code} — ${e.message}');
+    } on SignInWithAppleNotSupportedException catch (e, st) {
+      AppLogger.error('Apple 로그인 미지원 환경', error: e, stackTrace: st);
+      _showSnack('Apple 로그인이 지원되지 않는 환경입니다: ${e.message}');
+    } catch (e, st) {
+      AppLogger.error('Apple 로그인 실패', error: e, stackTrace: st);
+      _showSnack('Apple 로그인 실패: ${e.runtimeType} — $e');
     } finally {
       if (mounted) setState(() => loading = false);
     }

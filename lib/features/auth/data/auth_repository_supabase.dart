@@ -81,31 +81,71 @@ class AuthRepositorySupabase implements AuthRepository {
   Future<void> loginWithAppleAsync() async {
     AppLogger.auth('Apple 로그인 시작');
     final isAvailable = await SignInWithApple.isAvailable();
+    AppLogger.auth('Apple 로그인 사용 가능 여부', data: isAvailable);
     if (!isAvailable) {
       throw const AuthException('Apple 로그인은 이 기기에서 사용할 수 없습니다.');
     }
 
     final rawNonce = _client.auth.generateRawNonce();
     final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-      nonce: hashedNonce,
+    AppLogger.auth('Apple ID credential 요청');
+    final AuthorizationCredentialAppleID credential;
+    try {
+      credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: hashedNonce,
+      );
+    } on SignInWithAppleAuthorizationException catch (e, st) {
+      AppLogger.error(
+        'Apple ID credential 실패 (code=${e.code}, message=${e.message})',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    } catch (e, st) {
+      AppLogger.error(
+        'Apple ID credential 알 수 없는 오류',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+    AppLogger.auth(
+      'Apple ID credential 획득',
+      data: {
+        'userIdentifier': credential.userIdentifier,
+        'hasEmail': credential.email != null,
+        'hasFullName':
+            credential.givenName != null || credential.familyName != null,
+        'authorizationCodeLength': credential.authorizationCode.length,
+        'identityTokenLength': credential.identityToken?.length ?? 0,
+      },
     );
 
     final idToken = credential.identityToken;
     if (idToken == null) {
+      AppLogger.error('Apple identityToken 없음');
       throw const AuthException('Apple identityToken을 찾을 수 없습니다.');
     }
 
     AppLogger.auth('Supabase Apple signInWithIdToken 요청');
-    await _client.auth.signInWithIdToken(
-      provider: OAuthProvider.apple,
-      idToken: idToken,
-      nonce: rawNonce,
-    );
+    try {
+      await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+    } catch (e, st) {
+      AppLogger.error(
+        'Supabase Apple signInWithIdToken 실패',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
     AppLogger.auth('Supabase Apple 로그인 성공', data: _client.auth.currentUser?.id);
 
     final appleEmail = credential.email;
