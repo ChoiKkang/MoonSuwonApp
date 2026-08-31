@@ -154,6 +154,19 @@ class _CourseCardList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (courses.isEmpty) {
+      return SizedBox(
+        height: 120,
+        child: Center(
+          child: Text(
+            '추천 코스가 없어요',
+            style: AppTextStyles.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+    }
     return SizedBox(
       height: 220,
       child: ListView.separated(
