@@ -28,6 +28,10 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>주변의 야간 스팟과 데이트 코스를 거리 순으로 추천하기 위해 현재 위치를 사용합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>프로필 사진을 설정하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>프로필 사진 촬영을 위해 카메라 접근 권한이 필요합니다.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

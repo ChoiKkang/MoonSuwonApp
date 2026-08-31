@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
@@ -206,6 +207,60 @@ class AuthRepositorySupabase implements AuthRepository {
       return ProfileDto.fromJson(row);
     } catch (e, st) {
       AppLogger.error('profiles update 실패', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> uploadAvatarAsync({
+    required Uint8List bytes,
+    required String contentType,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const AuthException('로그인이 필요합니다.');
+    }
+
+    // 확장자는 contentType 기준. 실제 픽셀 처리는 앱 측에서 이미 완료된 상태.
+    final ext = switch (contentType) {
+      'image/jpeg' => 'jpg',
+      'image/png' => 'png',
+      'image/webp' => 'webp',
+      _ => throw ArgumentError.value(
+        contentType,
+        'contentType',
+        '지원하지 않는 이미지 형식입니다.',
+      ),
+    };
+    // 파일 경로는 `${userId}/avatar.${ext}`로 고정. 새로 업로드 시 upsert로
+    // 이전 파일을 덮어써 스토리지 낭비를 막는다.
+    final path = '${user.id}/avatar.$ext';
+
+    AppLogger.network(
+      'avatars upload 요청',
+      data: {'path': path, 'bytes': bytes.lengthInBytes, 'type': contentType},
+    );
+    try {
+      await _client.storage
+          .from('avatars')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: contentType,
+              upsert: true,
+              cacheControl: '3600',
+            ),
+          );
+      final publicUrl = _client.storage.from('avatars').getPublicUrl(path);
+      // Supabase CDN은 동일 URL이라도 upsert 후 캐시가 남을 수 있어
+      // 쿼리스트링으로 버스팅한다.
+      final busted =
+          '$publicUrl?ts=${DateTime.now().millisecondsSinceEpoch}';
+      AppLogger.network('avatars upload 완료', data: busted);
+      return busted;
+    } catch (e, st) {
+      AppLogger.error('avatars upload 실패', error: e, stackTrace: st);
       rethrow;
     }
   }

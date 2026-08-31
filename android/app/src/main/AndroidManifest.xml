@@ -6,6 +6,16 @@
     <!-- 알림 권한: Android 13(SDK 33) 이상에서 필요. 앱 푸시 알림 수신 여부 판별. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- 프로필 아바타: 갤러리(사진 선택)와 카메라 촬영. Android 13+는 Photo Picker를
+         쓰면 별도 저장소 권한 없이도 image_picker가 동작하지만, 하위 SDK 대응을 위해
+         READ_EXTERNAL_STORAGE도 함께 선언한다. 카메라는 image_picker.pickImage(source: camera)
+         호출 시 필요. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
     <application
         android:label="dalbit_suwon"
         android:name="${applicationName}"

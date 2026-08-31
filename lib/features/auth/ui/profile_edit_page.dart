@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
@@ -20,6 +21,12 @@ const _cardRadius = 12.0;
 const _nicknameMaxLen = 30;
 const _nicknameMinLen = 1;
 
+// 갤러리에서 고른 원본을 image_picker가 이 최대 크기로 리사이즈해서 돌려준다.
+// Supabase Storage의 5MB 상한 안에서 여유 있게 저장하기 위한 값.
+const _avatarMaxWidth = 1024.0;
+const _avatarMaxHeight = 1024.0;
+const _avatarJpegQuality = 85;
+
 class ProfileEditPage extends ConsumerStatefulWidget {
   const ProfileEditPage({super.key});
 
@@ -30,10 +37,22 @@ class ProfileEditPage extends ConsumerStatefulWidget {
 class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
   final _formKey = GlobalKey<FormState>();
   final _nicknameController = TextEditingController();
+  final _imagePicker = ImagePicker();
 
   ProfileDto? _initialProfile;
-  String? _avatarUrl;
+
+  /// 서버에 저장된 최신 아바타 URL. 사진을 새로 업로드하면 이 값으로 교체된다.
+  String? _remoteAvatarUrl;
+
+  /// 사용자가 이번 편집 세션에서 새로 고른 사진의 바이트. 저장 버튼을 눌러
+  /// Storage에 업로드하기 전까지 미리보기용으로만 사용한다.
+  Uint8List? _pickedBytes;
+
+  /// 새로 고른 사진의 contentType (`image/jpeg` 등). 업로드 시 사용.
+  String? _pickedContentType;
+
   bool _saving = false;
+  bool _picking = false;
 
   @override
   void dispose() {
@@ -45,7 +64,7 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     if (_initialProfile != null && _initialProfile!.id == profile.id) return;
     _initialProfile = profile;
     _nicknameController.text = profile.nickname ?? '';
-    _avatarUrl = profile.avatarUrl;
+    _remoteAvatarUrl = profile.avatarUrl;
   }
 
   bool _isDirty() {
@@ -54,7 +73,8 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final currentNickname = _nicknameController.text.trim();
     final initialNickname = (initial.nickname ?? '').trim();
     if (currentNickname != initialNickname) return true;
-    if ((_avatarUrl ?? '') != (initial.avatarUrl ?? '')) return true;
+    if ((_remoteAvatarUrl ?? '') != (initial.avatarUrl ?? '')) return true;
+    if (_pickedBytes != null) return true;
     return false;
   }
 
@@ -67,9 +87,21 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     final router = GoRouter.of(context);
     try {
       final repo = ref.read(authRepositoryProvider);
+
+      // 새 사진을 고른 경우 먼저 Storage에 업로드해서 URL을 확보한다.
+      var avatarUrl = _remoteAvatarUrl;
+      final pickedBytes = _pickedBytes;
+      final pickedType = _pickedContentType;
+      if (pickedBytes != null && pickedType != null) {
+        avatarUrl = await repo.uploadAvatarAsync(
+          bytes: pickedBytes,
+          contentType: pickedType,
+        );
+      }
+
       await repo.updateProfileAsync(
         nickname: _nicknameController.text.trim(),
-        avatarUrl: _avatarUrl,
+        avatarUrl: avatarUrl,
       );
       ref.invalidate(currentProfileProvider);
       if (!mounted) return;
@@ -87,67 +119,112 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
     }
   }
 
-  Future<void> _onEditAvatarUrlAsync() async {
-    final controller = TextEditingController(text: _avatarUrl ?? '');
-    final result = await showDialog<String?>(
+  Future<void> _onPickAvatarAsync() async {
+    if (_picking) return;
+    final source = await showModalBottomSheet<ImageSource>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surfaceContainer,
-        title: Text('프로필 이미지 URL', style: AppTextStyles.headlineMd),
-        content: Column(
+      backgroundColor: AppColors.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.url,
-              maxLines: 1,
-              autofocus: true,
-              style: AppTextStyles.bodyMd,
-              decoration: InputDecoration(
-                hintText: 'https://example.com/avatar.png',
-                hintStyle: AppTextStyles.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
-                ),
-                filled: true,
-                fillColor: AppColors.background,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(_cardRadius),
-                  borderSide: BorderSide(color: AppColors.glassBorder),
-                ),
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.onSurfaceVariant.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Icon(
+                Icons.photo_library_outlined,
+                color: AppColors.moonlightGold,
+              ),
+              title: Text('갤러리에서 선택', style: AppTextStyles.bodyMd),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.gallery),
+            ),
+            ListTile(
+              leading: Icon(
+                Icons.photo_camera_outlined,
+                color: AppColors.moonlightGold,
+              ),
+              title: Text('카메라로 촬영', style: AppTextStyles.bodyMd),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.camera),
+            ),
+            if (_pickedBytes != null || (_remoteAvatarUrl?.isNotEmpty ?? false))
+              ListTile(
+                leading: Icon(
+                  Icons.delete_outline,
+                  color: AppColors.error,
+                ),
+                title: Text(
+                  '기본 이미지로 되돌리기',
+                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.error),
+                ),
+                onTap: () => Navigator.of(sheetContext).pop(null),
+              ),
             const SizedBox(height: 8),
-            Text(
-              '비워두면 기본 이미지가 표시됩니다.',
-              style: AppTextStyles.labelSm.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(null),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () {
-              // 빈 문자열은 '기본 이미지로 초기화'로 취급.
-              Navigator.of(dialogContext).pop(controller.text.trim());
-            },
-            child: Text(
-              '확인',
-              style: TextStyle(color: AppColors.moonlightGold),
-            ),
-          ),
-        ],
       ),
     );
-    if (result == null) return;
-    setState(() {
-      _avatarUrl = result.isEmpty ? null : result;
-    });
+    if (!mounted) return;
+
+    if (source == null) {
+      // 시트가 그냥 닫혔거나 "기본 이미지로 되돌리기"를 눌렀을 때.
+      // 시트 액션과 dismiss를 구분하지 못하므로, 기본 이미지로 되돌리는 동작은
+      // 리모트/픽업된 이미지가 있을 때만 실제로 반영한다.
+      if (_pickedBytes != null || (_remoteAvatarUrl?.isNotEmpty ?? false)) {
+        setState(() {
+          _pickedBytes = null;
+          _pickedContentType = null;
+          _remoteAvatarUrl = null;
+        });
+      }
+      return;
+    }
+
+    setState(() => _picking = true);
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: _avatarMaxWidth,
+        maxHeight: _avatarMaxHeight,
+        imageQuality: _avatarJpegQuality,
+      );
+      if (picked == null) return; // 사용자가 취소
+      final bytes = await picked.readAsBytes();
+      // image_picker는 JPG로 재인코딩해서 돌려주는 것을 기본 동작으로 하지만,
+      // 안전을 위해 원본 mime 힌트를 우선 사용하고, 확장자로 폴백한다.
+      final mime = picked.mimeType ?? _mimeFromPath(picked.path);
+      setState(() {
+        _pickedBytes = bytes;
+        _pickedContentType = mime;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('사진을 불러오지 못했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _picking = false);
+    }
+  }
+
+  static String _mimeFromPath(String path) {
+    final lower = path.toLowerCase();
+    if (lower.endsWith('.png')) return 'image/png';
+    if (lower.endsWith('.webp')) return 'image/webp';
+    return 'image/jpeg';
   }
 
   @override
@@ -199,9 +276,11 @@ class _ProfileEditPageState extends ConsumerState<ProfileEditPage> {
           return _ProfileEditBody(
             formKey: _formKey,
             nicknameController: _nicknameController,
-            avatarUrl: _avatarUrl,
+            pickedBytes: _pickedBytes,
+            remoteAvatarUrl: _remoteAvatarUrl,
             profile: profile,
-            onEditAvatarUrlAsync: _onEditAvatarUrlAsync,
+            picking: _picking,
+            onPickAvatarAsync: _onPickAvatarAsync,
             onChanged: () => setState(() {}),
           );
         },
@@ -226,17 +305,21 @@ class _ProfileEditBody extends StatelessWidget {
   const _ProfileEditBody({
     required this.formKey,
     required this.nicknameController,
-    required this.avatarUrl,
+    required this.pickedBytes,
+    required this.remoteAvatarUrl,
     required this.profile,
-    required this.onEditAvatarUrlAsync,
+    required this.picking,
+    required this.onPickAvatarAsync,
     required this.onChanged,
   });
 
   final GlobalKey<FormState> formKey;
   final TextEditingController nicknameController;
-  final String? avatarUrl;
+  final Uint8List? pickedBytes;
+  final String? remoteAvatarUrl;
   final ProfileDto profile;
-  final Future<void> Function() onEditAvatarUrlAsync;
+  final bool picking;
+  final Future<void> Function() onPickAvatarAsync;
   final VoidCallback onChanged;
 
   @override
@@ -251,8 +334,10 @@ class _ProfileEditBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _AvatarSection(
-                avatarUrl: avatarUrl,
-                onEditPressed: onEditAvatarUrlAsync,
+                pickedBytes: pickedBytes,
+                remoteAvatarUrl: remoteAvatarUrl,
+                picking: picking,
+                onEditPressed: onPickAvatarAsync,
               ),
               const SizedBox(height: 32),
               _SectionLabel('닉네임'),
@@ -323,10 +408,14 @@ class _SectionLabel extends StatelessWidget {
 
 class _AvatarSection extends StatelessWidget {
   const _AvatarSection({
-    required this.avatarUrl,
+    required this.pickedBytes,
+    required this.remoteAvatarUrl,
+    required this.picking,
     required this.onEditPressed,
   });
-  final String? avatarUrl;
+  final Uint8List? pickedBytes;
+  final String? remoteAvatarUrl;
+  final bool picking;
   final Future<void> Function() onEditPressed;
 
   @override
@@ -334,59 +423,97 @@ class _AvatarSection extends StatelessWidget {
     return Center(
       child: Column(
         children: [
-          Container(
-            width: 112,
-            height: 112,
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.moonlightGold, width: 2),
-            ),
-            child: ClipOval(
-              child: (avatarUrl == null || avatarUrl!.isEmpty)
-                  ? ColoredBox(
-                      color: AppColors.surfaceContainerHigh,
-                      child: const Icon(
-                        Icons.person,
-                        color: AppColors.onSurfaceVariant,
-                        size: 48,
-                      ),
-                    )
-                  : Image.network(
-                      avatarUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => ColoredBox(
-                        color: AppColors.surfaceContainerHigh,
-                        child: const Icon(
-                          Icons.person,
-                          color: AppColors.onSurfaceVariant,
-                          size: 48,
+          GestureDetector(
+            onTap: onEditPressed,
+            child: Stack(
+              children: [
+                Container(
+                  width: 112,
+                  height: 112,
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.moonlightGold,
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(child: _buildAvatarImage()),
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.moonlightGold,
+                      border: Border.all(color: AppColors.background, width: 2),
+                    ),
+                    child: Icon(
+                      Icons.photo_camera,
+                      size: 16,
+                      color: AppColors.background,
+                    ),
+                  ),
+                ),
+                if (picking)
+                  Positioned.fill(
+                    child: ClipOval(
+                      child: Container(
+                        color: AppColors.background.withValues(alpha: 0.5),
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(
+                          color: AppColors.moonlightGold,
+                          strokeWidth: 2,
                         ),
                       ),
                     ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onEditPressed,
-            icon: Icon(Icons.link, size: 16, color: AppColors.moonlightGold),
-            label: Text(
-              '이미지 URL 변경',
+          TextButton(
+            onPressed: picking ? null : onEditPressed,
+            child: Text(
+              '사진 변경',
               style: AppTextStyles.labelMd.copyWith(
                 color: AppColors.moonlightGold,
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: AppColors.glassBorder),
-              backgroundColor: _glassPanelColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(999),
-              ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatarImage() {
+    if (pickedBytes != null) {
+      return Image.memory(pickedBytes!, fit: BoxFit.cover);
+    }
+    final url = remoteAvatarUrl;
+    if (url == null || url.isEmpty) {
+      return ColoredBox(
+        color: AppColors.surfaceContainerHigh,
+        child: const Icon(
+          Icons.person,
+          color: AppColors.onSurfaceVariant,
+          size: 48,
+        ),
+      );
+    }
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => ColoredBox(
+        color: AppColors.surfaceContainerHigh,
+        child: const Icon(
+          Icons.person,
+          color: AppColors.onSurfaceVariant,
+          size: 48,
+        ),
       ),
     );
   }
@@ -502,9 +629,7 @@ class _ProviderBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: AppColors.onSurface),
           const SizedBox(width: 12),
-          Expanded(
-            child: Text(label, style: AppTextStyles.bodyMd),
-          ),
+          Expanded(child: Text(label, style: AppTextStyles.bodyMd)),
           Icon(Icons.verified, size: 18, color: AppColors.moonlightGold),
         ],
       ),
