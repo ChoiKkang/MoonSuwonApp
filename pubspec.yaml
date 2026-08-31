@@ -60,3 +60,5 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/kakao/
+    - assets/kakao/2.0x/

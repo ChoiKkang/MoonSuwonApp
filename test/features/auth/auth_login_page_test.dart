@@ -9,6 +9,8 @@ import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show AuthNotifier, authNotifierProvider;
 import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart'
     show AuthLoginPage;
+import 'package:dalbit_suwon/shared/widgets/kakao_login_button.dart'
+    show KakaoLoginButton;
 
 class _FakeAuthNotifier extends AuthNotifier {
   _FakeAuthNotifier({this.kakaoError, this.appleError});
@@ -52,39 +54,51 @@ Widget _buildApp({Exception? kakaoError, Exception? appleError}) {
 
 void main() {
   group('AuthLoginPage 카카오 로그인', () {
+    testWidgets('공식 카카오 로그인 버튼이 노출된다', (tester) async {
+      await tester.pumpWidget(_buildApp());
+      await tester.pumpAndSettle();
+
+      expect(find.byType(KakaoLoginButton), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('카카오 로그인'),
+        findsWidgets,
+        reason: '카카오 로그인 버튼은 접근성 레이블을 노출해야 한다.',
+      );
+    });
+
     testWidgets('이미 가입된 이메일이면 스낵바를 띄우고 로그인 페이지를 유지한다', (tester) async {
       await tester.pumpWidget(
         _buildApp(kakaoError: const EmailAlreadyInUseException()),
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('카카오로 시작하기'));
+      await tester.tap(find.byType(KakaoLoginButton));
       await tester.pumpAndSettle();
 
       expect(find.text('이미 가입된 계정입니다.'), findsOneWidget);
-      expect(find.text('카카오로 시작하기'), findsOneWidget);
+      expect(find.byType(KakaoLoginButton), findsOneWidget);
     });
 
     testWidgets('로그인 오류 발생 시 에러 스낵바를 띄우고 로그인 페이지를 유지한다', (tester) async {
       await tester.pumpWidget(_buildApp(kakaoError: Exception('네트워크 오류')));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('카카오로 시작하기'));
+      await tester.tap(find.byType(KakaoLoginButton));
       await tester.pumpAndSettle();
 
       expect(find.text('카카오 로그인에 실패했습니다. 다시 시도해 주세요.'), findsOneWidget);
-      expect(find.text('카카오로 시작하기'), findsOneWidget);
+      expect(find.byType(KakaoLoginButton), findsOneWidget);
     });
 
     testWidgets('로그인 성공 시 홈으로 이동한다', (tester) async {
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('카카오로 시작하기'));
+      await tester.tap(find.byType(KakaoLoginButton));
       await tester.pumpAndSettle();
 
       expect(find.text('홈'), findsOneWidget);
-      expect(find.text('카카오로 시작하기'), findsNothing);
+      expect(find.byType(KakaoLoginButton), findsNothing);
     });
   });
 

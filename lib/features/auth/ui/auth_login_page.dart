@@ -3,9 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
-import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
-import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart' show EmailAlreadyInUseException;
-import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart' show authNotifierProvider;
+import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
+    show AppTextStyles;
+import 'package:dalbit_suwon/features/auth/data/auth_exceptions.dart'
+    show EmailAlreadyInUseException;
+import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
+    show authNotifierProvider;
+import 'package:dalbit_suwon/shared/widgets/kakao_login_button.dart'
+    show KakaoLoginButton;
 
 class AuthLoginPage extends ConsumerStatefulWidget {
   const AuthLoginPage({super.key});
@@ -105,16 +110,13 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
               const SizedBox(height: 8),
               Text(
                 '수원의 밤, 당신의 추억을 저장하세요',
-                style: AppTextStyles.bodyMd
-                    .copyWith(color: AppColors.onSurfaceVariant),
+                style: AppTextStyles.bodyMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
               const Spacer(),
-              _SocialLoginButton(
-                label: '카카오로 시작하기',
-                backgroundColor: const Color(0xFFFEE500),
-                foregroundColor: const Color(0xFF191919),
-                icon: Icons.chat_bubble_rounded,
+              KakaoLoginButton(
                 onPressed: loading ? null : _onLoginWithKakaoAsync,
               ),
               const SizedBox(height: 12),
@@ -138,15 +140,15 @@ class _AuthLoginPageState extends ConsumerState<AuthLoginPage> {
                 onTap: () => context.go('/'),
                 child: Text(
                   '로그인 없이 둘러보기',
-                  style: AppTextStyles.labelMd
-                      .copyWith(color: AppColors.onSurfaceVariant),
+                  style: AppTextStyles.labelMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 '로그인 시 서비스 이용 약관 및 개인정보처리방침에 동의하게 됩니다.',
-                style: AppTextStyles.labelSm
-                    .copyWith(color: AppColors.outline),
+                style: AppTextStyles.labelSm.copyWith(color: AppColors.outline),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
