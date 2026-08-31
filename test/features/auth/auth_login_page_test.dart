@@ -86,7 +86,7 @@ void main() {
       await tester.tap(find.byType(KakaoLoginButton));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('카카오 로그인 실패'), findsOneWidget);
+      expect(find.text('카카오 로그인에 실패했습니다. 다시 시도해 주세요.'), findsOneWidget);
       expect(find.byType(KakaoLoginButton), findsOneWidget);
     });
 
@@ -117,7 +117,7 @@ void main() {
       await tester.tap(find.text('Apple로 시작하기'));
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('Apple 로그인 실패'), findsOneWidget);
+      expect(find.text('Apple 로그인에 실패했습니다. 다시 시도해 주세요.'), findsOneWidget);
       expect(find.text('Apple로 시작하기'), findsOneWidget);
     });
 
