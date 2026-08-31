@@ -84,8 +84,9 @@ class _CourseCompletePageState extends ConsumerState<CourseCompletePage> {
       await SharePlus.instance.share(
         ShareParams(
           files: [file],
-          text: '${detail.title} 완주 기록 · 달빛수원',
-          subject: '달빛수원 완주 기록',
+          // 주의: text/subject를 함께 전달하면 iOS 공유 시트가 텍스트를 우선
+          // 처리해 "이미지 저장" 선택 시 이미지 대신 텍스트가 저장되는 문제가 있다.
+          // 파일만 전달해 이미지가 저장 대상으로 확실히 인식되도록 한다.
         ),
       );
     } on Object catch (e) {
