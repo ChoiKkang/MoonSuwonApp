@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dalbit_suwon/core/location/location_provider.dart'
+    show locationPermissionProvider;
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
     show AppTextStyles;
@@ -16,11 +18,27 @@ import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
 import 'package:dalbit_suwon/shared/widgets/app_bottom_nav.dart'
     show AppBottomNav, AppBottomNavTab;
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // 첫 진입 시 위치 권한 요청을 트리거한다.
+    // FutureProvider는 최초 read 시점에 evaluate 되므로 결과는 무시해도 무방.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(locationPermissionProvider);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final coursesAsync = ref.watch(coursesProvider);
 
     return Scaffold(
