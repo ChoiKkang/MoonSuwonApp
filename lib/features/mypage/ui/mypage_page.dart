@@ -68,7 +68,29 @@ class MyPagePage extends ConsumerWidget {
                           )
                         : const _ProfileCardGuest(),
                     const SizedBox(height: 32),
-                    Text('나의 활동', style: AppTextStyles.headlineMd),
+                    Row(
+                      children: [
+                        Text('나의 활동', style: AppTextStyles.headlineMd),
+                        const Spacer(),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => context.push('/mypage/history'),
+                          child: Padding(
+                            // 터치 영역 확보
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 4,
+                            ),
+                            child: Text(
+                              '내 기록보기 >',
+                              style: AppTextStyles.labelMd.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
                     if (summary.recentCourse != null) ...[
                       _RecentCourseCard(course: summary.recentCourse!),

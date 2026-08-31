@@ -25,6 +25,8 @@ import 'package:dalbit_suwon/features/auth/ui/profile_edit_page.dart'
     show ProfileEditPage;
 import 'package:dalbit_suwon/features/mypage/ui/mypage_page.dart'
     show MyPagePage;
+import 'package:dalbit_suwon/features/mypage/ui/course_history_page.dart'
+    show CourseHistoryPage;
 
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(this._ref) {
@@ -107,6 +109,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const ProfileEditPage(),
+      ),
+      GoRoute(
+        path: '/mypage/history',
+        builder: (context, state) => const CourseHistoryPage(),
       ),
     ],
     errorBuilder: (context, state) =>
