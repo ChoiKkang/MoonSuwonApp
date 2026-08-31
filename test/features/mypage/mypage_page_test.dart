@@ -86,8 +86,6 @@ const _summary = MyPageSummary(
     heroImageUrl: 'https://example.com/image.png',
     themeTags: ['date'],
   ),
-  locationPermissionGranted: false,
-  appVersion: 'v1.2.4',
 );
 
 /// 마이페이지가 favoriteSpots/CoursesProvider를 watch하므로,

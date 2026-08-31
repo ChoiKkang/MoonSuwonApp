@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dalbit_suwon/core/app_version/app_version_provider.dart'
+    show appVersionInfoProvider, appVersionServiceProvider;
+import 'package:dalbit_suwon/core/app_version/app_version_service.dart'
+    show AppVersionInfo;
+import 'package:dalbit_suwon/core/location/location_provider.dart'
+    show locationPermissionProvider, locationServiceProvider;
+import 'package:dalbit_suwon/core/location/location_service.dart'
+    show LocationAccessStatus;
+import 'package:dalbit_suwon/core/notification/notification_provider.dart'
+    show notificationPermissionProvider, notificationServiceProvider;
+import 'package:dalbit_suwon/core/notification/notification_service.dart'
+    show NotificationAccessStatus;
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
 import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
@@ -74,7 +86,7 @@ class MyPagePage extends ConsumerWidget {
                     const SizedBox(height: 32),
                     Text('설정', style: AppTextStyles.headlineMd),
                     const SizedBox(height: 16),
-                    _SettingsList(summary: summary, isLoggedIn: isLoggedIn),
+                    _SettingsList(),
                     if (isLoggedIn) ...[
                       const SizedBox(height: 8),
                       _AccountActions(),
@@ -246,7 +258,7 @@ class _ProfileCardLoggedIn extends StatelessWidget {
               top: 0,
               right: 0,
               child: TextButton(
-                onPressed: () => _showComingSoon(context, '프로필 편집'),
+                onPressed: () => context.push('/profile/edit'),
                 child: Text(
                   '프로필 편집',
                   style: AppTextStyles.labelMd.copyWith(
@@ -532,9 +544,7 @@ class _StatCard extends StatelessWidget {
 }
 
 class _SettingsList extends StatelessWidget {
-  const _SettingsList({required this.summary, required this.isLoggedIn});
-  final MyPageSummary summary;
-  final bool isLoggedIn;
+  const _SettingsList();
 
   @override
   Widget build(BuildContext context) {
@@ -547,31 +557,11 @@ class _SettingsList extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          _SettingsTile(
-            title: '위치 권한 설정',
-            trailing: isLoggedIn
-                ? null
-                : _StatusPill(
-                    label: summary.locationPermissionGranted ? '허용됨' : '미설정',
-                  ),
-            onTap: () => _showComingSoon(context, '위치 권한 설정'),
-          ),
+          const _LocationPermissionTile(),
           const Divider(height: 1, color: AppColors.glassBorder),
-          _SettingsTile(
-            title: '알림 설정',
-            onTap: () => _showComingSoon(context, '알림 설정'),
-          ),
+          const _NotificationPermissionTile(),
           const Divider(height: 1, color: AppColors.glassBorder),
-          _SettingsTile(
-            title: '버전 정보',
-            trailing: Text(
-              summary.appVersion,
-              style: AppTextStyles.labelSm.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
-            ),
-            showChevron: false,
-          ),
+          const _AppVersionTile(),
           const Divider(height: 1, color: AppColors.glassBorder),
           _SettingsTile(
             title: '자주 묻는 질문',
@@ -583,9 +573,137 @@ class _SettingsList extends StatelessWidget {
   }
 }
 
+/// 시스템 위치 권한 상태를 On/Off로 표시하고, Off 상태에서 탭 시 권한을 요청한다.
+class _LocationPermissionTile extends ConsumerWidget {
+  const _LocationPermissionTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final permAsync = ref.watch(locationPermissionProvider);
+    final isOn = permAsync.value == LocationAccessStatus.granted;
+    final label = permAsync.isLoading ? '확인 중' : (isOn ? 'On' : 'Off');
+
+    return _SettingsTile(
+      title: '위치 권한 설정',
+      trailing: _StatusPill(label: label, active: isOn),
+      onTap: isOn ? null : () => _onOffTapAsync(context, ref, permAsync.value),
+    );
+  }
+
+  Future<void> _onOffTapAsync(
+    BuildContext context,
+    WidgetRef ref,
+    LocationAccessStatus? status,
+  ) async {
+    final service = ref.read(locationServiceProvider);
+    switch (status) {
+      case LocationAccessStatus.deniedForever:
+        await service.openAppSettingsAsync();
+      case LocationAccessStatus.serviceDisabled:
+        await service.openLocationSettingsAsync();
+      case LocationAccessStatus.denied:
+      case LocationAccessStatus.granted:
+      case null:
+        await service.ensurePermissionAsync();
+    }
+    if (!context.mounted) return;
+    ref.invalidate(locationPermissionProvider);
+  }
+}
+
+/// 시스템 알림 권한 상태를 On/Off로 표시하고, Off 상태에서 탭 시 권한을 요청한다.
+class _NotificationPermissionTile extends ConsumerWidget {
+  const _NotificationPermissionTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final permAsync = ref.watch(notificationPermissionProvider);
+    final isOn = permAsync.value == NotificationAccessStatus.granted;
+    final label = permAsync.isLoading ? '확인 중' : (isOn ? 'On' : 'Off');
+
+    return _SettingsTile(
+      title: '알림 설정',
+      trailing: _StatusPill(label: label, active: isOn),
+      onTap: isOn ? null : () => _onOffTapAsync(context, ref, permAsync.value),
+    );
+  }
+
+  Future<void> _onOffTapAsync(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationAccessStatus? status,
+  ) async {
+    final service = ref.read(notificationServiceProvider);
+    if (status == NotificationAccessStatus.permanentlyDenied) {
+      await service.openAppSettingsAsync();
+    } else {
+      await service.requestAsync();
+    }
+    if (!context.mounted) return;
+    ref.invalidate(notificationPermissionProvider);
+  }
+}
+
+/// 현재 앱 버전을 표시하고, 최신 버전이 아니면 탭 시 앱스토어로 이동한다.
+class _AppVersionTile extends ConsumerWidget {
+  const _AppVersionTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final infoAsync = ref.watch(appVersionInfoProvider);
+    final info = infoAsync.value;
+    final versionLabel = info == null ? '확인 중' : 'v${info.currentVersion}';
+    final hasUpgrade = info?.hasUpgrade ?? false;
+
+    return _SettingsTile(
+      title: '버전 정보',
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasUpgrade) ...[
+            _StatusPill(label: '업데이트 있음', active: true),
+            const SizedBox(width: 8),
+          ],
+          Text(
+            versionLabel,
+            style: AppTextStyles.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+      showChevron: hasUpgrade,
+      onTap: hasUpgrade && info != null
+          ? () => _openStoreAsync(context, ref, info)
+          : null,
+    );
+  }
+
+  Future<void> _openStoreAsync(
+    BuildContext context,
+    WidgetRef ref,
+    AppVersionInfo info,
+  ) async {
+    try {
+      await ref
+          .read(appVersionServiceProvider)
+          .openStoreAsync(info.packageName);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('스토어를 열지 못했습니다: $e')),
+        );
+      }
+    }
+  }
+}
+
 class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label});
+  const _StatusPill({required this.label, this.active = false});
   final String label;
+
+  /// `true`이면 강조 색상(moonlightGold 계열)로 표시. `false`면 기본 회색.
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
@@ -593,13 +711,21 @@ class _StatusPill extends StatelessWidget {
       margin: const EdgeInsets.only(right: 4),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainerHigh,
+        color: active
+            ? AppColors.moonlightGold.withValues(alpha: 0.16)
+            : AppColors.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.glassBorder),
+        border: Border.all(
+          color: active
+              ? AppColors.moonlightGold.withValues(alpha: 0.5)
+              : AppColors.glassBorder,
+        ),
       ),
       child: Text(
         label,
-        style: AppTextStyles.labelSm.copyWith(color: AppColors.onSurfaceVariant),
+        style: AppTextStyles.labelSm.copyWith(
+          color: active ? AppColors.moonlightGold : AppColors.onSurfaceVariant,
+        ),
       ),
     );
   }

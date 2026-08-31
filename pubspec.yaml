@@ -34,6 +34,20 @@ dependencies:
   # 위치 (권한 요청 + 현재 위치)
   geolocator: ^14.0.3
 
+  # 알림 권한 (푸시 알림 On/Off 판별 및 요청)
+  permission_handler: ^11.3.1
+
+  # 앱 버전 정보 (마이페이지 버전 표시 + 최신 버전 체크)
+  package_info_plus: ^10.2.1
+
+  # 최신 버전 확인용 (iTunes Lookup API 호출)
+  http: ^1.2.0
+
+  # 지도 SDK (OpenStreetMap 타일 기반, API 키 불필요)
+  # 추후 카카오맵/네이버맵 SDK로 교체 가능. UI/Provider 계층은 유지.
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
   # 로컬 저장 (게스트 상태의 찜 목록 등)
   shared_preferences: ^2.3.3
 

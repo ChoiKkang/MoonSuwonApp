@@ -19,10 +19,6 @@ class MyPageRepositoryMock implements MyPageRepository {
   @override
   Future<MyPageSummary> fetchSummaryAsync() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    return const MyPageSummary(
-      recentCourse: _recentCourse,
-      locationPermissionGranted: false,
-      appVersion: 'v1.2.4',
-    );
+    return const MyPageSummary(recentCourse: _recentCourse);
   }
 }

@@ -63,4 +63,10 @@ class LocationService {
       return null;
     }
   }
+
+  /// 앱 설정 화면(iOS Settings/Android App info)을 연다. 영구 거부(`deniedForever`)일 때 사용.
+  Future<bool> openAppSettingsAsync() => Geolocator.openAppSettings();
+
+  /// 시스템 위치 서비스 설정 화면을 연다. `serviceDisabled`일 때 사용.
+  Future<bool> openLocationSettingsAsync() => Geolocator.openLocationSettings();
 }
