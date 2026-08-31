@@ -6,8 +6,8 @@ part of 'course.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$CourseSummaryImpl _$$CourseSummaryImplFromJson(Map<String, dynamic> json) =>
-    _$CourseSummaryImpl(
+_CourseSummary _$CourseSummaryFromJson(Map<String, dynamic> json) =>
+    _CourseSummary(
       id: json['id'] as String,
       title: json['title'] as String,
       subtitle: json['subtitle'] as String,
@@ -22,7 +22,7 @@ _$CourseSummaryImpl _$$CourseSummaryImplFromJson(Map<String, dynamic> json) =>
       petReadyFlag: json['petReadyFlag'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$CourseSummaryImplToJson(_$CourseSummaryImpl instance) =>
+Map<String, dynamic> _$CourseSummaryToJson(_CourseSummary instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
@@ -36,8 +36,8 @@ Map<String, dynamic> _$$CourseSummaryImplToJson(_$CourseSummaryImpl instance) =>
       'petReadyFlag': instance.petReadyFlag,
     };
 
-_$CourseDetailImpl _$$CourseDetailImplFromJson(Map<String, dynamic> json) =>
-    _$CourseDetailImpl(
+_CourseDetail _$CourseDetailFromJson(Map<String, dynamic> json) =>
+    _CourseDetail(
       id: json['id'] as String,
       title: json['title'] as String,
       subtitle: json['subtitle'] as String,
@@ -55,7 +55,7 @@ _$CourseDetailImpl _$$CourseDetailImplFromJson(Map<String, dynamic> json) =>
       petReadyFlag: json['petReadyFlag'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$$CourseDetailImplToJson(_$CourseDetailImpl instance) =>
+Map<String, dynamic> _$CourseDetailToJson(_CourseDetail instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,

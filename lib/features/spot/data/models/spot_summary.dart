@@ -4,7 +4,7 @@ part 'spot_summary.freezed.dart';
 part 'spot_summary.g.dart';
 
 @freezed
-class SpotSummary with _$SpotSummary {
+abstract class SpotSummary with _$SpotSummary {
   const factory SpotSummary({
     required String id,
     required String slug,

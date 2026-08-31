@@ -4,7 +4,7 @@ part 'spot_detail.freezed.dart';
 part 'spot_detail.g.dart';
 
 @freezed
-class LocalSpot with _$LocalSpot {
+abstract class LocalSpot with _$LocalSpot {
   const factory LocalSpot({
     required String id,
     required String name,
@@ -20,7 +20,7 @@ class LocalSpot with _$LocalSpot {
 }
 
 @freezed
-class SpotDetail with _$SpotDetail {
+abstract class SpotDetail with _$SpotDetail {
   const factory SpotDetail({
     required String id,
     required String name,
