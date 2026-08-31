@@ -68,7 +68,11 @@ class _SpotDetailContent extends StatelessWidget {
             SliverToBoxAdapter(
               child: Stack(
                 children: [
-                  HeroImageHeader(imageUrl: detail.heroImageUrl, height: 400),
+                  HeroImageHeader(
+                    imageUrl: detail.heroImageUrl,
+                    height: 400,
+                    fallbackTitle: detail.name,
+                  ),
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 8,
                     left: 20,
