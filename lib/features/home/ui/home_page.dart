@@ -15,6 +15,8 @@ import 'package:dalbit_suwon/features/spot/data/models/spot_summary.dart'
     show SpotSummary;
 import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
     show nowGoodSpotsProvider;
+import 'package:dalbit_suwon/shared/widgets/app_bottom_nav.dart'
+    show AppBottomNav, AppBottomNavTab;
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -45,7 +47,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         bottom: false,
         child: CustomScrollView(
           slivers: [
-            _HomeAppBar(),
+            // 상단 네비게이션 바(SliverAppBar)는 홈 화면에서 hidden 처리한다.
+            // 히어로 카피가 바로 노출되어 야경 콘텐츠의 몰입도를 높인다.
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverList(
@@ -90,36 +93,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
       ),
-      // GNB(하단 네비게이션)는 홈 화면에서 hidden 처리한다.
-      // 홈은 콘텐츠 몰입에 집중하고, 다른 탭 접근은 홈 외 화면(마이/찜/내 주변)에서만 노출한다.
-    );
-  }
-}
-
-class _HomeAppBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SliverAppBar(
-      backgroundColor: AppColors.background,
-      floating: true,
-      titleSpacing: 20,
-      title: Row(
-        children: [
-          Text(
-            'Dalbit Suwon',
-            style: AppTextStyles.headlineMd.copyWith(
-              color: AppColors.moonlightGold,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const Spacer(),
-          Icon(
-            Icons.notifications_outlined,
-            color: AppColors.onSurfaceVariant,
-            size: 24,
-          ),
-        ],
-      ),
+      bottomNavigationBar: const AppBottomNav(currentTab: AppBottomNavTab.home),
     );
   }
 }
