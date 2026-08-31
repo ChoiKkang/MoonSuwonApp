@@ -166,6 +166,50 @@ class AuthRepositorySupabase implements AuthRepository {
     }
   }
 
+  @override
+  Future<ProfileDto> updateProfileAsync({
+    required String nickname,
+    String? avatarUrl,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const AuthException('로그인이 필요합니다.');
+    }
+
+    final trimmedNickname = nickname.trim();
+    if (trimmedNickname.isEmpty) {
+      throw ArgumentError.value(nickname, 'nickname', '닉네임은 공백일 수 없습니다.');
+    }
+
+    final trimmedAvatar = avatarUrl?.trim();
+    // Supabase는 null을 명시적으로 보내야 컬럼을 초기화한다.
+    // 빈 문자열도 서버에는 null로 저장한다.
+    final avatarValue = (trimmedAvatar == null || trimmedAvatar.isEmpty)
+        ? null
+        : trimmedAvatar;
+
+    final payload = <String, dynamic>{
+      'nickname': trimmedNickname,
+      'avatar_url': avatarValue,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    AppLogger.network('profiles update 요청', data: payload);
+    try {
+      final row = await _client
+          .from('profiles')
+          .update(payload)
+          .eq('id', user.id)
+          .select()
+          .single();
+      AppLogger.network('profiles update 완료');
+      return ProfileDto.fromJson(row);
+    } catch (e, st) {
+      AppLogger.error('profiles update 실패', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
   Future<void> _updateAuthEmailAsync(String? email) async {
     if (email == null || email.isEmpty) return;
     final currentEmail = _client.auth.currentUser?.email;

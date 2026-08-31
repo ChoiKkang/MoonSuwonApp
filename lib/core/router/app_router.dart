@@ -13,10 +13,14 @@ import 'package:dalbit_suwon/features/course/ui/course_progress_page.dart'
     show CourseProgressPage;
 import 'package:dalbit_suwon/features/course/ui/course_complete_page.dart'
     show CourseCompletePage;
+import 'package:dalbit_suwon/features/nearby/ui/nearby_page.dart'
+    show NearbyPage;
 import 'package:dalbit_suwon/features/spot/ui/spot_detail_page.dart'
     show SpotDetailPage;
 import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart'
     show AuthLoginPage;
+import 'package:dalbit_suwon/features/auth/ui/profile_edit_page.dart'
+    show ProfileEditPage;
 import 'package:dalbit_suwon/features/mypage/ui/mypage_page.dart'
     show MyPagePage;
 
@@ -65,6 +69,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             SpotDetailPage(spotId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/mypage', builder: (context, state) => const MyPagePage()),
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const ProfileEditPage(),
+      ),
+      GoRoute(
+        path: '/nearby',
+        builder: (context, state) => const NearbyPage(),
+      ),
       GoRoute(
         path: '/bookmarks',
         builder: (context, state) => const FavoritePage(),
