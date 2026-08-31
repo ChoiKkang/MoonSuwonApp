@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
@@ -20,6 +19,8 @@ import 'package:dalbit_suwon/shared/widgets/hero_image_header.dart'
     show HeroImageHeader;
 import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart'
     show MoonlightCtaBar;
+import 'package:dalbit_suwon/shared/widgets/directions_bottom_sheet.dart'
+    show DirectionsBottomSheet;
 
 class SpotDetailPage extends ConsumerWidget {
   const SpotDetailPage({super.key, required this.spotId});
@@ -47,16 +48,16 @@ class _SpotDetailContent extends StatelessWidget {
   final SpotDetail detail;
   final String spotId;
 
-  Future<void> _openKakaoMap(SpotDetail detail) async {
-    final uri = Uri.parse('kakaomap://look?p=${detail.lat},${detail.lng}');
-    final fallback = Uri.parse(
-      'https://map.kakao.com/link/map/${Uri.encodeComponent(detail.name)},${detail.lat},${detail.lng}',
+  Future<void> _openDirectionsSheetAsync(
+    BuildContext context,
+    SpotDetail detail,
+  ) async {
+    await DirectionsBottomSheet.showAsync(
+      context,
+      destinationName: detail.name,
+      lat: detail.lat,
+      lng: detail.lng,
     );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      await launchUrl(fallback, mode: LaunchMode.externalApplication);
-    }
   }
 
   @override
@@ -143,10 +144,15 @@ class _SpotDetailContent extends StatelessWidget {
           bottom: 0,
           left: 0,
           right: 0,
-          child: MoonlightCtaBar(
-            label: '카카오맵으로 길찾기',
-            icon: Icons.map_outlined,
-            onPressed: () => _openKakaoMap(detail),
+          child: Builder(
+            // showModalBottomSheet을 띄우려면 하위 context가 필요.
+            // 상위 CustomScrollView의 context를 사용하면 정상 동작.
+            builder: (buttonContext) => MoonlightCtaBar(
+              label: '길찾기',
+              icon: Icons.near_me_outlined,
+              onPressed: () =>
+                  _openDirectionsSheetAsync(buttonContext, detail),
+            ),
           ),
         ),
       ],
