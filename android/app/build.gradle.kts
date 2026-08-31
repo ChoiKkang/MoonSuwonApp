@@ -28,7 +28,9 @@ val kakaoNativeAppKey =
 
 android {
     namespace = "team.choikkang.dalbitsuwon"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android 등 최신 라이브러리가 SDK 37 이상을 요구하므로
+    // Flutter 기본값 대신 명시적으로 37 이상을 지정한다.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
