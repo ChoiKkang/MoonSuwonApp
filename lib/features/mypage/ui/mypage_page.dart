@@ -8,6 +8,8 @@ import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show Pr
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show authNotifierProvider, currentProfileProvider;
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
+import 'package:dalbit_suwon/features/favorite/provider/favorite_provider.dart'
+    show favoriteCoursesProvider, favoriteSpotsProvider;
 import 'package:dalbit_suwon/features/mypage/data/models/mypage_summary.dart'
     show MyPageSummary;
 import 'package:dalbit_suwon/features/mypage/provider/mypage_provider.dart'
@@ -443,12 +445,17 @@ class _RecentCourseCard extends StatelessWidget {
   }
 }
 
-class _StatsRow extends StatelessWidget {
+class _StatsRow extends ConsumerWidget {
   const _StatsRow({required this.summary});
   final MyPageSummary summary;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final spotsAsync = ref.watch(favoriteSpotsProvider);
+    final coursesAsync = ref.watch(favoriteCoursesProvider);
+    final spotCount = spotsAsync.value?.length ?? 0;
+    final courseCount = coursesAsync.value?.length ?? 0;
+
     return Row(
       children: [
         Expanded(
@@ -456,7 +463,7 @@ class _StatsRow extends StatelessWidget {
             icon: Icons.location_on,
             iconColor: AppColors.softAmber,
             label: '찜한 장소',
-            value: '${summary.favoriteSpotCount}',
+            value: '$spotCount',
           ),
         ),
         const SizedBox(width: 16),
@@ -465,7 +472,7 @@ class _StatsRow extends StatelessWidget {
             icon: Icons.route,
             iconColor: AppColors.moonlightGold,
             label: '찜한 코스',
-            value: '${summary.favoriteCourseCount}',
+            value: '$courseCount',
           ),
         ),
       ],

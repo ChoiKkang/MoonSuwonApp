@@ -20,8 +20,6 @@ class MyPageRepositoryMock implements MyPageRepository {
   Future<MyPageSummary> fetchSummaryAsync() async {
     await Future.delayed(const Duration(milliseconds: 300));
     return const MyPageSummary(
-      favoriteSpotCount: 12,
-      favoriteCourseCount: 3,
       recentCourse: _recentCourse,
       locationPermissionGranted: false,
       appVersion: 'v1.2.4',

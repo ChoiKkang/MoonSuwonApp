@@ -9,6 +9,14 @@ import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show Pr
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show AuthNotifier, authNotifierProvider, currentProfileProvider;
 import 'package:dalbit_suwon/features/course/data/models/course.dart' show CourseSummary;
+import 'package:dalbit_suwon/features/favorite/data/favorite_repository.dart'
+    show FavoriteRepository, FavoriteTarget;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_course_summary.dart'
+    show FavoriteCourseSummary;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_spot_summary.dart'
+    show FavoriteSpotSummary;
+import 'package:dalbit_suwon/features/favorite/provider/favorite_provider.dart'
+    show favoriteRepositoryProvider;
 import 'package:dalbit_suwon/features/mypage/data/models/mypage_summary.dart'
     show MyPageSummary;
 import 'package:dalbit_suwon/features/mypage/provider/mypage_provider.dart'
@@ -67,8 +75,6 @@ final _testProfile = ProfileDto(
 );
 
 const _summary = MyPageSummary(
-  favoriteSpotCount: 12,
-  favoriteCourseCount: 3,
   recentCourse: CourseSummary(
     id: 'course-date-01',
     title: '화성행궁 밤길 산책',
@@ -83,6 +89,49 @@ const _summary = MyPageSummary(
   locationPermissionGranted: false,
   appVersion: 'v1.2.4',
 );
+
+/// 마이페이지가 favoriteSpots/CoursesProvider를 watch하므로,
+/// UI 카운트 검증을 위해 스팟 12개, 코스 3개를 반환하는 최소 fake 저장소를 주입한다.
+class _FakeFavoriteRepository implements FavoriteRepository {
+  @override
+  Future<List<FavoriteSpotSummary>> fetchFavoriteSpotsAsync() async {
+    return List.generate(
+      12,
+      (i) => FavoriteSpotSummary(
+        placeId: 'spot-$i',
+        slug: 'slug-$i',
+        name: '스팟 $i',
+        category: 'heritage-night-view',
+        heroImageUrl: 'https://example.com/spot-$i.jpg',
+      ),
+    );
+  }
+
+  @override
+  Future<List<FavoriteCourseSummary>> fetchFavoriteCoursesAsync() async {
+    return List.generate(
+      3,
+      (i) => FavoriteCourseSummary(
+        courseId: 'course-$i',
+        slug: 'course-slug-$i',
+        title: '코스 $i',
+        estimatedDurationMin: 60,
+        spotCount: 3,
+        heroImageUrl: 'https://example.com/course-$i.jpg',
+        themeTags: const ['date'],
+      ),
+    );
+  }
+
+  @override
+  Future<void> addSpotAsync(FavoriteSpotSummary spot) async {}
+
+  @override
+  Future<void> addCourseAsync(FavoriteCourseSummary course) async {}
+
+  @override
+  Future<void> removeAsync(FavoriteTarget target) async {}
+}
 
 Widget _buildApp({required bool isLoggedIn, Exception? deleteError}) {
   final router = GoRouter(
@@ -101,6 +150,7 @@ Widget _buildApp({required bool isLoggedIn, Exception? deleteError}) {
       currentProfileProvider.overrideWith(
         (ref) async => isLoggedIn ? _testProfile : null,
       ),
+      favoriteRepositoryProvider.overrideWithValue(_FakeFavoriteRepository()),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
@@ -119,6 +169,7 @@ Widget _buildAppWithNotifier(AuthNotifier Function() createNotifier) {
       authNotifierProvider.overrideWith(createNotifier),
       myPageSummaryProvider.overrideWith((ref) async => _summary),
       currentProfileProvider.overrideWith((ref) async => _testProfile),
+      favoriteRepositoryProvider.overrideWithValue(_FakeFavoriteRepository()),
     ],
     child: MaterialApp.router(routerConfig: router),
   );
