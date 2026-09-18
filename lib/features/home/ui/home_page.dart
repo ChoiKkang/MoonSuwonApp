@@ -326,16 +326,17 @@ class _NowGoodSpotSection extends ConsumerWidget {
             child: Center(child: Text('지금 가기 좋은 스팟이 없어요')),
           );
         }
-        return Row(
-          children: [
-            for (final spot in spots)
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: spot == spots.last ? 0 : 8),
-                  child: _NowGoodSpotCard(spot: spot),
-                ),
-              ),
-          ],
+        return SizedBox(
+          height: 156,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: spots.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, index) => SizedBox(
+              width: 160,
+              child: _NowGoodSpotCard(spot: spots[index]),
+            ),
+          ),
         );
       },
     );
