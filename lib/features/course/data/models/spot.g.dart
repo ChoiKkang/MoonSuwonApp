@@ -6,7 +6,7 @@ part of 'spot.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$SpotImpl _$$SpotImplFromJson(Map<String, dynamic> json) => _$SpotImpl(
+_Spot _$SpotFromJson(Map<String, dynamic> json) => _Spot(
   id: json['id'] as String,
   name: json['name'] as String,
   summary: json['summary'] as String,
@@ -22,20 +22,19 @@ _$SpotImpl _$$SpotImplFromJson(Map<String, dynamic> json) => _$SpotImpl(
   petNote: json['petNote'] as String? ?? '',
 );
 
-Map<String, dynamic> _$$SpotImplToJson(_$SpotImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'name': instance.name,
-      'summary': instance.summary,
-      'imageUrl': instance.imageUrl,
-      'lat': instance.lat,
-      'lng': instance.lng,
-      'missionRadiusM': instance.missionRadiusM,
-      'missionPrompt': instance.missionPrompt,
-      'status': _$SpotProgressStatusEnumMap[instance.status]!,
-      'petPolicy': instance.petPolicy,
-      'petNote': instance.petNote,
-    };
+Map<String, dynamic> _$SpotToJson(_Spot instance) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'summary': instance.summary,
+  'imageUrl': instance.imageUrl,
+  'lat': instance.lat,
+  'lng': instance.lng,
+  'missionRadiusM': instance.missionRadiusM,
+  'missionPrompt': instance.missionPrompt,
+  'status': _$SpotProgressStatusEnumMap[instance.status]!,
+  'petPolicy': instance.petPolicy,
+  'petNote': instance.petNote,
+};
 
 const _$SpotProgressStatusEnumMap = {
   SpotProgressStatus.pending: 'pending',

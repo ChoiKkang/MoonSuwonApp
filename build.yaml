@@ -1,0 +1,14 @@
+# Riverpod 4.x는 기본으로 `NotifierBase` suffix가 붙은 클래스명에서 이를 제거한 뒤
+# `Provider` suffix를 붙여 provider 이름을 생성한다. 그 결과 기존 코드베이스에서
+# 사용하던 `authNotifierProvider`, `courseProgressNotifierProvider`,
+# `arrivalModalNotifierProvider` 같은 이름이 사라지고 `authProvider` 등으로 축약된다.
+#
+# 이 프로젝트는 이미 다수의 UI/테스트 코드에서 `NotifierProvider` suffix로 참조하고
+# 있으므로, `provider_name_strip_pattern`을 빈 문자열로 지정해 축약을 끈다.
+# 결과: `AuthNotifier` → `authNotifierProvider` (기존 이름 유지).
+targets:
+  $default:
+    builders:
+      riverpod_generator:
+        options:
+          provider_name_strip_pattern: ""

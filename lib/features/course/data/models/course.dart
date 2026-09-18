@@ -6,7 +6,7 @@ part 'course.freezed.dart';
 part 'course.g.dart';
 
 @freezed
-class CourseSummary with _$CourseSummary {
+abstract class CourseSummary with _$CourseSummary {
   const factory CourseSummary({
     required String id,
     required String title,
@@ -25,7 +25,7 @@ class CourseSummary with _$CourseSummary {
 }
 
 @freezed
-class CourseDetail with _$CourseDetail {
+abstract class CourseDetail with _$CourseDetail {
   const factory CourseDetail({
     required String id,
     required String title,

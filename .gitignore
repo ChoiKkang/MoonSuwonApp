@@ -211,4 +211,7 @@ ios/Flutter/AppSecrets.xcconfig
 *.flutter-plugins
 flutter_export_environment.sh
 
+# Supabase CLI local state
+supabase/.temp/
+
 # End of https://www.toptal.com/developers/gitignore/api/dart,flutter,macos,androidstudio,xcode

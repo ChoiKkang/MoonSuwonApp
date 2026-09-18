@@ -1,7 +1,11 @@
-import 'package:dalbit_suwon/features/spot/data/spot_repository.dart' show SpotRepository;
-import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart' show SpotDetail, LocalSpot;
+import 'package:dalbit_suwon/features/spot/data/spot_repository.dart'
+    show NowGoodSpotsRepository, SpotRepository;
+import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart'
+    show SpotDetail, LocalSpot;
+import 'package:dalbit_suwon/features/spot/data/models/spot_summary.dart'
+    show SpotSummary;
 
-class SpotRepositoryMock implements SpotRepository {
+class SpotRepositoryMock implements SpotRepository, NowGoodSpotsRepository {
   static const _baseImage =
       'https://lh3.googleusercontent.com/aida-public/AB6AXuCvt-8qOtha-Zr10buBMyIFDjShZLLu9plZWs0jJHpK8u1Y2JeKj2E2cu8JmByDBBqxpNlyJOhX865sq4CUNsrFBOO3cSF2xeWYcVyJjZ2rNRmPG69mzPL76bDElgwWXeVgKZEO8X4vHndh7ov2uWAudVqtvvnOBBPJOsyzxW3If7rwfAsH93J9fXs0t99q5v2wwE3C_RWf7vh8v4sLmaxWRNmuEFX4pyo5AZVG4EDml98EsnVrFeGb5R-Adbpxk_4Pml1Y6XvGfd47';
 
@@ -58,11 +62,60 @@ class SpotRepositoryMock implements SpotRepository {
       missionRadiusM: 80,
       nearbySpots: [],
     ),
+    'spot-hwaseonghaenggung': const SpotDetail(
+      id: 'spot-hwaseonghaenggung',
+      name: '화성행궁',
+      category: 'heritage-night-view',
+      intro: '정조가 수원 화성을 축조하며 함께 지은 조선 최대 규모의 행궁입니다.',
+      heroImageUrl: _baseImage,
+      lat: 37.2836,
+      lng: 127.0093,
+      nightHighlight: '야간 조명이 켜진 정문(신풍루)과 행궁 담장의 실루엣이 인상적입니다.',
+      photoTip: '신풍루 정면에서 조명과 처마선을 함께 담는 구도가 좋아요.',
+      romanticMoment: '행궁 앞마당을 함께 거닐며 정조와 혜경궁 홍씨의 이야기를 나눠보세요.',
+      missionPrompt: '신풍루 앞에서 인증샷을 남겨보세요.',
+      missionRadiusM: 100,
+      nearbySpots: [
+        LocalSpot(
+          id: 'local-cafe-02',
+          name: '행리단길 디저트 가게',
+          type: 'dessert',
+          summary: '행궁 관람 후 들르기 좋은 디저트 맛집',
+          imageUrl: _cafeImage,
+          walkingMinutes: 5,
+        ),
+      ],
+    ),
   };
 
   @override
   Future<SpotDetail> fetchSpotDetailAsync(String spotId) async {
     await Future.delayed(const Duration(milliseconds: 300));
     return _spots[spotId] ?? _spots['spot-banghwasuryujeong']!;
+  }
+
+  @override
+  Future<List<SpotSummary>> fetchNowGoodSpotsAsync() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    const nowGoodSpotIds = ['spot-banghwasuryujeong', 'spot-hwaseonghaenggung'];
+    return nowGoodSpotIds
+        .map((id) => _spots[id]!)
+        .map(
+          (spot) => SpotSummary(
+            id: spot.id,
+            slug: spot.id == 'spot-hwaseonghaenggung'
+                ? 'hwaseong-haenggung'
+                : 'banghwasuryujeong',
+            name: spot.name,
+            category: spot.category,
+            heroImageUrl: spot.heroImageUrl,
+            crowdLevel: '여유',
+            distanceM: null,
+            reasonLabel: '지금 비교적 여유로워요',
+            recommendationScore: 82.35,
+            forecastStatus: 'forecast_available',
+          ),
+        )
+        .toList();
   }
 }

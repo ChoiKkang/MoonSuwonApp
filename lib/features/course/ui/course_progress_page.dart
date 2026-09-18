@@ -4,12 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
-import 'package:dalbit_suwon/features/course/data/models/spot.dart' show Spot, SpotProgressStatus;
-import 'package:dalbit_suwon/features/course/provider/course_provider.dart' show courseDetailProvider;
+import 'package:dalbit_suwon/features/course/data/models/spot.dart'
+    show Spot, SpotProgressStatus;
+import 'package:dalbit_suwon/features/course/provider/course_provider.dart'
+    show courseDetailProvider;
 import 'package:dalbit_suwon/features/course/provider/course_progress_provider.dart'
-    show courseProgressNotifierProvider, arrivalModalNotifierProvider, statusForIndex;
+    show
+        arrivalModalNotifierProvider,
+        courseProgressNotifierProvider,
+        statusForIndex;
 import 'package:dalbit_suwon/shared/widgets/arrival_modal.dart' show ArrivalModal;
-import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart' show MoonlightCtaBar;
+import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart'
+    show MoonlightCtaBar;
 
 class CourseProgressPage extends ConsumerWidget {
   const CourseProgressPage({super.key, required this.courseId});
@@ -18,8 +24,9 @@ class CourseProgressPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(courseDetailProvider(courseId));
-    final currentIndex = ref.watch(courseProgressNotifierProvider);
+    final progress = ref.watch(courseProgressNotifierProvider);
     final showModal = ref.watch(arrivalModalNotifierProvider);
+    final currentIndex = progress.currentIndex;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -124,11 +131,7 @@ class CourseProgressPage extends ConsumerWidget {
                       ref.read(arrivalModalNotifierProvider.notifier).hide();
                       context.push('/spot/${spots[currentIndex].id}');
                     },
-                    onNextSpotTap: () {
-                      ref.read(courseProgressNotifierProvider.notifier)
-                          .completeCurrentSpot();
-                      ref.read(arrivalModalNotifierProvider.notifier).hide();
-                    },
+                    onNextSpotTap: () => _onCheckinCurrentSpotAsync(context, ref),
                     onDismiss: () =>
                         ref.read(arrivalModalNotifierProvider.notifier).hide(),
                   ),
@@ -138,6 +141,20 @@ class CourseProgressPage extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _onCheckinCurrentSpotAsync(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final modal = ref.read(arrivalModalNotifierProvider.notifier);
+    modal.hide();
+
+    // 현재 스팟 체크인. 실패해도 UX는 다음으로 이동해야 하므로
+    // Notifier가 예외를 삼키고 에러 메시지를 상태에 담아 둔다.
+    await ref
+        .read(courseProgressNotifierProvider.notifier)
+        .checkinCurrentSpotAsync();
   }
 }
 

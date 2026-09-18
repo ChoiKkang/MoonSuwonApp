@@ -6,162 +6,209 @@ part of 'spot_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$spotRepositoryHash() => r'0aa34cc31e5121f88f3f3d8bbe7404f13213b9f8';
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
 
-/// See also [spotRepository].
 @ProviderFor(spotRepository)
-final spotRepositoryProvider = AutoDisposeProvider<SpotRepository>.internal(
-  spotRepository,
-  name: r'spotRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$spotRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+final spotRepositoryProvider = SpotRepositoryProvider._();
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef SpotRepositoryRef = AutoDisposeProviderRef<SpotRepository>;
-String _$spotDetailHash() => r'203861a5e3fc6676e4b6ffa9526b80a8dbfa8df5';
-
-/// Copied from Dart SDK
-class _SystemHash {
-  _SystemHash._();
-
-  static int combine(int hash, int value) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + value);
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
-    return hash ^ (hash >> 6);
-  }
-
-  static int finish(int hash) {
-    // ignore: parameter_assignments
-    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
-    // ignore: parameter_assignments
-    hash = hash ^ (hash >> 11);
-    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
-  }
-}
-
-/// See also [spotDetail].
-@ProviderFor(spotDetail)
-const spotDetailProvider = SpotDetailFamily();
-
-/// See also [spotDetail].
-class SpotDetailFamily extends Family<AsyncValue<SpotDetail>> {
-  /// See also [spotDetail].
-  const SpotDetailFamily();
-
-  /// See also [spotDetail].
-  SpotDetailProvider call(String spotId) {
-    return SpotDetailProvider(spotId);
-  }
-
-  @override
-  SpotDetailProvider getProviderOverride(
-    covariant SpotDetailProvider provider,
-  ) {
-    return call(provider.spotId);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'spotDetailProvider';
-}
-
-/// See also [spotDetail].
-class SpotDetailProvider extends AutoDisposeFutureProvider<SpotDetail> {
-  /// See also [spotDetail].
-  SpotDetailProvider(String spotId)
-    : this._internal(
-        (ref) => spotDetail(ref as SpotDetailRef, spotId),
-        from: spotDetailProvider,
-        name: r'spotDetailProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$spotDetailHash,
-        dependencies: SpotDetailFamily._dependencies,
-        allTransitiveDependencies: SpotDetailFamily._allTransitiveDependencies,
-        spotId: spotId,
+final class SpotRepositoryProvider
+    extends $FunctionalProvider<SpotRepository, SpotRepository, SpotRepository>
+    with $Provider<SpotRepository> {
+  SpotRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'spotRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
       );
 
-  SpotDetailProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.spotId,
-  }) : super.internal();
+  @override
+  String debugGetCreateSourceHash() => _$spotRepositoryHash();
 
-  final String spotId;
+  @$internal
+  @override
+  $ProviderElement<SpotRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
 
   @override
-  Override overrideWith(
-    FutureOr<SpotDetail> Function(SpotDetailRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: SpotDetailProvider._internal(
-        (ref) => create(ref as SpotDetailRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        spotId: spotId,
-      ),
-    );
+  SpotRepository create(Ref ref) {
+    return spotRepository(ref);
   }
 
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SpotRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SpotRepository>(value),
+    );
+  }
+}
+
+String _$spotRepositoryHash() => r'0aa34cc31e5121f88f3f3d8bbe7404f13213b9f8';
+
+@ProviderFor(spotRepositorySupabase)
+final spotRepositorySupabaseProvider = SpotRepositorySupabaseProvider._();
+
+final class SpotRepositorySupabaseProvider
+    extends
+        $FunctionalProvider<
+          SpotRepositorySupabase,
+          SpotRepositorySupabase,
+          SpotRepositorySupabase
+        >
+    with $Provider<SpotRepositorySupabase> {
+  SpotRepositorySupabaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'spotRepositorySupabaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
   @override
-  AutoDisposeFutureProviderElement<SpotDetail> createElement() {
-    return _SpotDetailProviderElement(this);
+  String debugGetCreateSourceHash() => _$spotRepositorySupabaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<SpotRepositorySupabase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  SpotRepositorySupabase create(Ref ref) {
+    return spotRepositorySupabase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SpotRepositorySupabase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SpotRepositorySupabase>(value),
+    );
+  }
+}
+
+String _$spotRepositorySupabaseHash() =>
+    r'b2cd28ee4fdf587e4b1216f7844838a8f191299a';
+
+@ProviderFor(spotDetail)
+final spotDetailProvider = SpotDetailFamily._();
+
+final class SpotDetailProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<SpotDetail>,
+          SpotDetail,
+          FutureOr<SpotDetail>
+        >
+    with $FutureModifier<SpotDetail>, $FutureProvider<SpotDetail> {
+  SpotDetailProvider._({
+    required SpotDetailFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'spotDetailProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$spotDetailHash();
+
+  @override
+  String toString() {
+    return r'spotDetailProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<SpotDetail> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<SpotDetail> create(Ref ref) {
+    final argument = this.argument as String;
+    return spotDetail(ref, argument);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is SpotDetailProvider && other.spotId == spotId;
+    return other is SpotDetailProvider && other.argument == argument;
   }
 
   @override
   int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, spotId.hashCode);
-
-    return _SystemHash.finish(hash);
+    return argument.hashCode;
   }
 }
 
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin SpotDetailRef on AutoDisposeFutureProviderRef<SpotDetail> {
-  /// The parameter `spotId` of this provider.
-  String get spotId;
-}
+String _$spotDetailHash() => r'3d56fa6769358084bd83978679b437d518edbc24';
 
-class _SpotDetailProviderElement
-    extends AutoDisposeFutureProviderElement<SpotDetail>
-    with SpotDetailRef {
-  _SpotDetailProviderElement(super.provider);
+final class SpotDetailFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<SpotDetail>, String> {
+  SpotDetailFamily._()
+    : super(
+        retry: null,
+        name: r'spotDetailProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  SpotDetailProvider call(String spotId) =>
+      SpotDetailProvider._(argument: spotId, from: this);
 
   @override
-  String get spotId => (origin as SpotDetailProvider).spotId;
+  String toString() => r'spotDetailProvider';
 }
 
-// ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package
+@ProviderFor(nowGoodSpots)
+final nowGoodSpotsProvider = NowGoodSpotsProvider._();
+
+final class NowGoodSpotsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<SpotSummary>>,
+          List<SpotSummary>,
+          FutureOr<List<SpotSummary>>
+        >
+    with
+        $FutureModifier<List<SpotSummary>>,
+        $FutureProvider<List<SpotSummary>> {
+  NowGoodSpotsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'nowGoodSpotsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$nowGoodSpotsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<SpotSummary>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<SpotSummary>> create(Ref ref) {
+    return nowGoodSpots(ref);
+  }
+}
+
+String _$nowGoodSpotsHash() => r'b1430fcf24e036eb5494996908b7474073033d6f';

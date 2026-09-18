@@ -6,7 +6,7 @@ part 'spot.g.dart';
 enum SpotProgressStatus { pending, current, completed }
 
 @freezed
-class Spot with _$Spot {
+abstract class Spot with _$Spot {
   const factory Spot({
     required String id,
     required String name,

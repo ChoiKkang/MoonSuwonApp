@@ -1,20 +1,134 @@
+import 'dart:io' show File;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart' show getTemporaryDirectory;
+import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
 import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
-import 'package:dalbit_suwon/features/course/provider/course_provider.dart' show courseDetailProvider;
-import 'package:dalbit_suwon/features/course/provider/course_progress_provider.dart' show courseProgressNotifierProvider;
-import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart' show MoonlightCtaButton;
+import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
+    show authNotifierProvider;
+import 'package:dalbit_suwon/features/course/data/models/course.dart'
+    show CourseDetail;
+import 'package:dalbit_suwon/features/course/provider/course_provider.dart'
+    show courseDetailProvider;
+import 'package:dalbit_suwon/features/course/provider/course_progress_provider.dart'
+    show CourseProgressState, courseProgressNotifierProvider;
+import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart'
+    show MoonlightCtaButton;
 
-class CourseCompletePage extends ConsumerWidget {
+/// 코스 완료 화면.
+///
+/// 진입 시 로그인 사용자라면 `complete_course_progress` RPC를 호출해
+/// `core.user_course_progress`의 status/completed_at을 서버에 기록한다.
+class CourseCompletePage extends ConsumerStatefulWidget {
   const CourseCompletePage({super.key, required this.courseId});
   final String courseId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final detailAsync = ref.watch(courseDetailProvider(courseId));
+  ConsumerState<CourseCompletePage> createState() => _CourseCompletePageState();
+}
+
+class _CourseCompletePageState extends ConsumerState<CourseCompletePage> {
+  bool _completeCalled = false;
+
+  /// 완료 카드 이미지 캡처용 RepaintBoundary key.
+  final GlobalKey _cardCaptureKey = GlobalKey();
+
+  /// 저장·공유 중복 탭 방지
+  bool _isSharing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeCompleteCourseAsync();
+    });
+  }
+
+  Future<void> _maybeCompleteCourseAsync() async {
+    if (_completeCalled) return;
+    _completeCalled = true;
+    await ref
+        .read(courseProgressNotifierProvider.notifier)
+        .completeCourseAsync();
+  }
+
+  Future<void> _onShareCardAsync(CourseDetail detail) async {
+    if (_isSharing) return;
+    setState(() => _isSharing = true);
+
+    try {
+      final bytes = await _captureCardAsPngAsync();
+      if (bytes == null) {
+        _showSnack('카드를 이미지로 저장할 수 없습니다.');
+        return;
+      }
+      final tempDir = await getTemporaryDirectory();
+      final safeTitle = detail.title
+          .replaceAll(RegExp(r'[^a-zA-Z0-9가-힣]'), '_')
+          .toLowerCase();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath =
+          '${tempDir.path}/dalbit_suwon_${safeTitle}_$timestamp.png';
+
+      // XFile.fromData(bytes, path: ...) 는 실제 디스크에 파일을 쓰지 않고
+      // 메모리에만 유지한다. iOS 공유 시트는 path를 우선 참조하므로 그 경로에
+      // 실제 파일이 없으면 "이미지 저장" 결과가 0KB가 된다.
+      // 반드시 File.writeAsBytes로 디스크에 먼저 기록한 뒤 XFile 을 생성한다.
+      final tempFile = File(filePath);
+      await tempFile.writeAsBytes(bytes, flush: true);
+
+      final xfile = XFile(
+        tempFile.path,
+        name: 'dalbit_suwon_${safeTitle}_$timestamp.png',
+        mimeType: 'image/png',
+      );
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [xfile],
+          // 주의: text/subject를 함께 전달하면 iOS 공유 시트가 텍스트를 우선
+          // 처리해 "이미지 저장" 선택 시 이미지 대신 텍스트가 저장되는 문제가 있다.
+          // 파일만 전달해 이미지가 저장 대상으로 확실히 인식되도록 한다.
+        ),
+      );
+    } on Object catch (e) {
+      _showSnack('공유 중 오류가 발생했습니다: $e');
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
+  Future<Uint8List?> _captureCardAsPngAsync() async {
+    final boundaryContext = _cardCaptureKey.currentContext;
+    if (boundaryContext == null) return null;
+    final boundary =
+        boundaryContext.findRenderObject() as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+    // 고해상도 캡처. 기기 스케일보다 조금 크게 잡아 공유용 화질 확보.
+    final image = await boundary.toImage(pixelRatio: 3.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData?.buffer.asUint8List();
+  }
+
+  void _showSnack(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final detailAsync = ref.watch(courseDetailProvider(widget.courseId));
+    final progress = ref.watch(courseProgressNotifierProvider);
+    final isLoggedIn = ref.watch(authNotifierProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -22,7 +136,10 @@ class CourseCompletePage extends ConsumerWidget {
         backgroundColor: AppColors.background,
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.onSurface),
-          onPressed: () => context.go('/'),
+          onPressed: () {
+            ref.read(courseProgressNotifierProvider.notifier).reset();
+            context.go('/');
+          },
         ),
         title: const Text('Dalbit Suwon'),
         centerTitle: true,
@@ -44,10 +161,14 @@ class CourseCompletePage extends ConsumerWidget {
                   color: AppColors.moonlightGold.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                   border: Border.all(
-                      color: AppColors.moonlightGold.withValues(alpha: 0.3)),
+                    color: AppColors.moonlightGold.withValues(alpha: 0.3),
+                  ),
                 ),
-                child: const Icon(Icons.star_outline,
-                    color: AppColors.moonlightGold, size: 32),
+                child: const Icon(
+                  Icons.star_outline,
+                  color: AppColors.moonlightGold,
+                  size: 32,
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -64,7 +185,11 @@ class CourseCompletePage extends ConsumerWidget {
                     .copyWith(color: AppColors.onSurfaceVariant),
               ),
               const SizedBox(height: 28),
-              _CompletionCard(detail: detail),
+              // 캡처 대상: 이 RepaintBoundary 하위 위젯이 공유 이미지로 저장된다.
+              RepaintBoundary(
+                key: _cardCaptureKey,
+                child: _CompletionCard(detail: detail, progress: progress),
+              ),
               const SizedBox(height: 24),
               Text(
                 '오늘의 추억을 공유하고 기록해보세요.',
@@ -73,9 +198,10 @@ class CourseCompletePage extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               MoonlightCtaButton(
-                label: '이미지로 저장 및 공유하기',
+                label: _isSharing ? '이미지 준비 중…' : '이미지로 저장 및 공유하기',
                 icon: Icons.share_outlined,
-                onPressed: () {},
+                onPressed:
+                    _isSharing ? () {} : () => _onShareCardAsync(detail),
               ),
               const SizedBox(height: 8),
               Row(
@@ -83,7 +209,12 @@ class CourseCompletePage extends ConsumerWidget {
                   Expanded(
                     child: _OutlineButton(
                       label: '내 기록 확인하기',
-                      onPressed: () {},
+                      onPressed: () {
+                        ref
+                            .read(courseProgressNotifierProvider.notifier)
+                            .reset();
+                        context.go('/mypage');
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -100,8 +231,13 @@ class CourseCompletePage extends ConsumerWidget {
                   ),
                 ],
               ),
+              // 로그인 안내 배너는 게스트에게만 노출.
+              // 로그인 사용자에게는 이미 기록이 저장됐다는 확정 배너로 대체.
               const SizedBox(height: 24),
-              _LoginNudgeBanner(),
+              if (isLoggedIn)
+                const _RecordSavedBanner()
+              else
+                const _LoginNudgeBanner(),
             ],
           ),
         ),
@@ -111,13 +247,15 @@ class CourseCompletePage extends ConsumerWidget {
 }
 
 class _CompletionCard extends StatelessWidget {
-  const _CompletionCard({required this.detail});
-  final dynamic detail;
+  const _CompletionCard({required this.detail, required this.progress});
+  final CourseDetail detail;
+  final CourseProgressState progress;
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final dateStr = '${now.month}월 ${now.day}일의 밤';
+    final completedAt = progress.completedAt ?? DateTime.now();
+    final dateStr = '${completedAt.month}월 ${completedAt.day}일의 밤';
+    final duration = detail.estimatedDurationMin;
 
     return Container(
       width: double.infinity,
@@ -133,16 +271,7 @@ class _CompletionCard extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Stack(
               children: [
-                Image.network(
-                  detail.heroImageUrl,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    height: 160,
-                    color: AppColors.surfaceContainerHigh,
-                  ),
-                ),
+                _CompletionCardHeroImage(imageUrl: detail.heroImageUrl),
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -171,26 +300,34 @@ class _CompletionCard extends StatelessWidget {
                                 letterSpacing: 1.2,
                               ),
                             ),
-                            Text(dateStr,
-                                style: AppTextStyles.headlineMd
-                                    .copyWith(fontSize: 18)),
+                            Text(
+                              dateStr,
+                              style: AppTextStyles.headlineMd
+                                  .copyWith(fontSize: 18),
+                            ),
                           ],
                         ),
                         const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColors.moonlightGold.withValues(alpha: 0.15),
+                            color: AppColors.moonlightGold
+                                .withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color:
-                                    AppColors.moonlightGold.withValues(alpha: 0.3)),
+                              color: AppColors.moonlightGold
+                                  .withValues(alpha: 0.3),
+                            ),
                           ),
-                          child: Text('Perfect',
-                              style: AppTextStyles.labelSm.copyWith(
-                                color: AppColors.moonlightGold,
-                              )),
+                          child: Text(
+                            progress.isPerfect ? 'Perfect' : 'Complete',
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.moonlightGold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -206,8 +343,7 @@ class _CompletionCard extends StatelessWidget {
               children: [
                 _StatItem(
                   icon: Icons.access_time,
-                  value:
-                      '${detail.estimatedDurationMin ~/ 60}h ${detail.estimatedDurationMin % 60}m',
+                  value: '${duration ~/ 60}h ${duration % 60}m',
                   label: '소요 시간',
                 ),
                 _StatItem(
@@ -223,15 +359,68 @@ class _CompletionCard extends StatelessWidget {
               ],
             ),
           ),
+          if (progress.errorMessage != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Text(
+                progress.errorMessage!,
+                style: AppTextStyles.labelSm.copyWith(color: AppColors.error),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
+/// 완료 카드 상단 hero 이미지. `Image.network`를 직접 써서 RepaintBoundary
+/// 캡처 시 CachedNetworkImage 로딩 지연이 이미지 누락을 유발하지 않도록 한다.
+class _CompletionCardHeroImage extends StatelessWidget {
+  const _CompletionCardHeroImage({required this.imageUrl});
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl.trim().isEmpty) {
+      return Container(
+        height: 160,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.surfaceContainerHigh,
+              AppColors.background,
+            ],
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.nights_stay_outlined,
+          color: AppColors.moonlightGold.withValues(alpha: 0.6),
+          size: 40,
+        ),
+      );
+    }
+    return Image.network(
+      imageUrl,
+      height: 160,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => Container(
+        height: 160,
+        color: AppColors.surfaceContainerHigh,
+      ),
+    );
+  }
+}
+
 class _StatItem extends StatelessWidget {
-  const _StatItem(
-      {required this.icon, required this.value, required this.label});
+  const _StatItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
   final IconData icon;
   final String value;
   final String label;
@@ -242,10 +431,15 @@ class _StatItem extends StatelessWidget {
       children: [
         Icon(icon, color: AppColors.onSurfaceVariant, size: 20),
         const SizedBox(height: 6),
-        Text(value, style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600)),
-        Text(label,
-            style:
-                AppTextStyles.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(
+          value,
+          style: AppTextStyles.bodyMd.copyWith(fontWeight: FontWeight.w600),
+        ),
+        Text(
+          label,
+          style: AppTextStyles.labelSm
+              .copyWith(color: AppColors.onSurfaceVariant),
+        ),
       ],
     );
   }
@@ -272,6 +466,8 @@ class _OutlineButton extends StatelessWidget {
 }
 
 class _LoginNudgeBanner extends StatelessWidget {
+  const _LoginNudgeBanner();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -283,8 +479,11 @@ class _LoginNudgeBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.person_outline,
-              color: AppColors.onSurfaceVariant, size: 20),
+          const Icon(
+            Icons.person_outline,
+            color: AppColors.onSurfaceVariant,
+            size: 20,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -300,6 +499,42 @@ class _LoginNudgeBanner extends StatelessWidget {
               '로그인/가입',
               style: AppTextStyles.labelMd
                   .copyWith(color: AppColors.moonlightGold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 로그인 사용자에게만 노출. 서버에 이번 완주 기록이 저장됐음을 안내.
+class _RecordSavedBanner extends StatelessWidget {
+  const _RecordSavedBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.moonlightGold.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.moonlightGold.withValues(alpha: 0.25),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.check_circle_outline,
+            color: AppColors.moonlightGold,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '이번 코스가 내 기록에 저장됐습니다.\n마이페이지에서 언제든 다시 확인할 수 있습니다.',
+              style: AppTextStyles.labelSm
+                  .copyWith(color: AppColors.onSurface),
             ),
           ),
         ],

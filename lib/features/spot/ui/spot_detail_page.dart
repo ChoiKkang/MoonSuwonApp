@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
-import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
-import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart' show SpotDetail, LocalSpot;
-import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart' show spotDetailProvider;
-import 'package:dalbit_suwon/shared/widgets/glass_icon_button.dart' show GlassIconButton;
-import 'package:dalbit_suwon/shared/widgets/hero_image_header.dart' show HeroImageHeader;
-import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart' show MoonlightCtaBar;
+import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
+    show AppTextStyles;
+import 'package:dalbit_suwon/features/favorite/data/models/favorite_spot_summary.dart'
+    show FavoriteSpotSummary;
+import 'package:dalbit_suwon/features/favorite/ui/widgets/favorite_toggle_button.dart'
+    show FavoriteToggleButton;
+import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart'
+    show SpotDetail, LocalSpot;
+import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
+    show spotDetailProvider;
+import 'package:dalbit_suwon/shared/widgets/glass_icon_button.dart'
+    show GlassIconButton;
+import 'package:dalbit_suwon/shared/widgets/hero_image_header.dart'
+    show HeroImageHeader;
+import 'package:dalbit_suwon/shared/widgets/moonlight_cta_button.dart'
+    show MoonlightCtaBar;
+import 'package:dalbit_suwon/shared/widgets/directions_bottom_sheet.dart'
+    show DirectionsBottomSheet;
 
 class SpotDetailPage extends ConsumerWidget {
   const SpotDetailPage({super.key, required this.spotId});
@@ -26,28 +37,27 @@ class SpotDetailPage extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.moonlightGold),
         ),
         error: (e, _) => Center(child: Text('오류: $e')),
-        data: (detail) => _SpotDetailContent(detail: detail),
+        data: (detail) => _SpotDetailContent(detail: detail, spotId: spotId),
       ),
     );
   }
 }
 
 class _SpotDetailContent extends StatelessWidget {
-  const _SpotDetailContent({required this.detail});
+  const _SpotDetailContent({required this.detail, required this.spotId});
   final SpotDetail detail;
+  final String spotId;
 
-  Future<void> _openKakaoMap(SpotDetail detail) async {
-    final uri = Uri.parse(
-      'kakaomap://look?p=${detail.lat},${detail.lng}',
+  Future<void> _openDirectionsSheetAsync(
+    BuildContext context,
+    SpotDetail detail,
+  ) async {
+    await DirectionsBottomSheet.showAsync(
+      context,
+      destinationName: detail.name,
+      lat: detail.lat,
+      lng: detail.lng,
     );
-    final fallback = Uri.parse(
-      'https://map.kakao.com/link/map/${Uri.encodeComponent(detail.name)},${detail.lat},${detail.lng}',
-    );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      await launchUrl(fallback, mode: LaunchMode.externalApplication);
-    }
   }
 
   @override
@@ -59,7 +69,11 @@ class _SpotDetailContent extends StatelessWidget {
             SliverToBoxAdapter(
               child: Stack(
                 children: [
-                  HeroImageHeader(imageUrl: detail.heroImageUrl, height: 400),
+                  HeroImageHeader(
+                    imageUrl: detail.heroImageUrl,
+                    height: 400,
+                    fallbackTitle: detail.name,
+                  ),
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 8,
                     left: 20,
@@ -71,9 +85,17 @@ class _SpotDetailContent extends StatelessWidget {
                           icon: Icons.arrow_back,
                           onPressed: () => context.pop(),
                         ),
-                        GlassIconButton(
-                          icon: Icons.favorite_outline,
-                          onPressed: () {},
+                        FavoriteToggleButton.spot(
+                          spot: FavoriteSpotSummary(
+                            placeId: detail.id,
+                            slug: spotId,
+                            name: detail.name,
+                            category: detail.category,
+                            heroImageUrl: detail.heroImageUrl,
+                            nightHighlight: detail.nightHighlight.isEmpty
+                                ? null
+                                : detail.nightHighlight,
+                          ),
                         ),
                       ],
                     ),
@@ -82,20 +104,30 @@ class _SpotDetailContent extends StatelessWidget {
               ),
             ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top, 20, 120),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                MediaQuery.of(context).padding.top,
+                20,
+                120,
+              ),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   _SpotHeader(detail: detail),
                   const SizedBox(height: 24),
                   _SpotHighlightGrid(detail: detail),
-                  const SizedBox(height: 16),
-                  _RomanticCard(text: detail.romanticMoment),
+                  if (detail.romanticMoment.trim().isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _RomanticCard(text: detail.romanticMoment),
+                  ],
                   const SizedBox(height: 32),
                   if (detail.nearbySpots.isNotEmpty) ...[
                     Row(
                       children: [
-                        const Icon(Icons.explore_outlined,
-                            size: 18, color: AppColors.onSurfaceVariant),
+                        const Icon(
+                          Icons.explore_outlined,
+                          size: 18,
+                          color: AppColors.onSurfaceVariant,
+                        ),
                         const SizedBox(width: 8),
                         Text('주변 추천 스팟', style: AppTextStyles.headlineMd),
                       ],
@@ -112,10 +144,15 @@ class _SpotDetailContent extends StatelessWidget {
           bottom: 0,
           left: 0,
           right: 0,
-          child: MoonlightCtaBar(
-            label: '카카오맵으로 길찾기',
-            icon: Icons.map_outlined,
-            onPressed: () => _openKakaoMap(detail),
+          child: Builder(
+            // showModalBottomSheet을 띄우려면 하위 context가 필요.
+            // 상위 CustomScrollView의 context를 사용하면 정상 동작.
+            builder: (buttonContext) => MoonlightCtaBar(
+              label: '길찾기',
+              icon: Icons.near_me_outlined,
+              onPressed: () =>
+                  _openDirectionsSheetAsync(buttonContext, detail),
+            ),
           ),
         ),
       ],
@@ -144,9 +181,12 @@ class _SpotHeader extends StatelessWidget {
             children: [
               Icon(Icons.location_on, size: 14, color: AppColors.softAmber),
               const SizedBox(width: 6),
-              Text('수원 화성',
-                  style: AppTextStyles.labelSm
-                      .copyWith(color: AppColors.onSurfaceVariant)),
+              Text(
+                '수원 화성',
+                style: AppTextStyles.labelSm.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
         ),
@@ -155,8 +195,9 @@ class _SpotHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           detail.intro,
-          style:
-              AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTextStyles.bodyMd.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -169,23 +210,31 @@ class _SpotHighlightGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    final cards = <Widget>[];
+    if (detail.nightHighlight.trim().isNotEmpty) {
+      cards.add(
         _HighlightCard(
           icon: Icons.wb_twilight,
           iconColor: AppColors.moonlightGold,
           title: 'Night Highlights',
           body: detail.nightHighlight,
         ),
-        const SizedBox(height: 12),
+      );
+    }
+    if (detail.photoTip.trim().isNotEmpty) {
+      cards.add(
         _HighlightCard(
           icon: Icons.photo_camera_outlined,
           iconColor: AppColors.primary,
           title: 'Photo Tip',
           body: detail.photoTip,
         ),
-      ],
-    );
+      );
+    }
+    if (cards.isEmpty) return const SizedBox.shrink();
+    if (cards.length == 1) return cards.single;
+
+    return Column(children: [cards[0], const SizedBox(height: 12), cards[1]]);
   }
 }
 
@@ -217,14 +266,19 @@ class _HighlightCard extends StatelessWidget {
             children: [
               Icon(icon, color: iconColor, size: 20),
               const SizedBox(width: 10),
-              Text(title,
-                  style: AppTextStyles.headlineMd.copyWith(fontSize: 18)),
+              Flexible(
+                child: Text(
+                  title,
+                  style: AppTextStyles.headlineMd.copyWith(fontSize: 18),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(body,
-              style: AppTextStyles.bodyMd
-                  .copyWith(color: AppColors.onSurface)),
+          Text(
+            body,
+            style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurface),
+          ),
         ],
       ),
     );
@@ -269,18 +323,26 @@ class _RomanticCard extends StatelessWidget {
                         color: AppColors.softAmber.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.favorite,
-                          color: AppColors.softAmber, size: 16),
+                      child: const Icon(
+                        Icons.favorite,
+                        color: AppColors.softAmber,
+                        size: 16,
+                      ),
                     ),
                     const SizedBox(width: 10),
-                    Text('낭만적인 순간',
-                        style: AppTextStyles.headlineMd.copyWith(fontSize: 18)),
+                    Text(
+                      '낭만적인 순간',
+                      style: AppTextStyles.headlineMd.copyWith(fontSize: 18),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                Text(text,
-                    style: AppTextStyles.bodyMd
-                        .copyWith(color: AppColors.onSurfaceVariant)),
+                Text(
+                  text,
+                  style: AppTextStyles.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -325,17 +387,14 @@ class _NearbySpotCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Image.network(
               spot.imageUrl,
               height: 96,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
-                height: 96,
-                color: AppColors.surfaceContainerHigh,
-              ),
+              errorBuilder: (_, _, _) =>
+                  Container(height: 96, color: AppColors.surfaceContainerHigh),
             ),
           ),
           Padding(

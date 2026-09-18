@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
@@ -39,10 +40,19 @@ class AuthRepositorySupabase implements AuthRepository {
     }
 
     AppLogger.auth('Supabase signInWithIdToken 요청');
-    await _client.auth.signInWithIdToken(
-      provider: OAuthProvider.kakao,
-      idToken: idToken,
-    );
+    try {
+      await _client.auth.signInWithIdToken(
+        provider: OAuthProvider.kakao,
+        idToken: idToken,
+      );
+    } catch (e, st) {
+      AppLogger.error(
+        'Supabase signInWithIdToken 실패',
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
     AppLogger.auth('Supabase 로그인 성공', data: _client.auth.currentUser?.id);
 
     String? kakaoEmail;
@@ -66,11 +76,6 @@ class AuthRepositorySupabase implements AuthRepository {
     }
     await _upsertProfileAsync(provider: 'kakao', providerEmail: kakaoEmail);
     if (emailConflict != null) throw emailConflict;
-  }
-
-  @override
-  Future<void> loginWithNaverAsync() async {
-    throw UnimplementedError('네이버 로그인은 준비 중입니다.');
   }
 
   @override
@@ -159,6 +164,104 @@ class AuthRepositorySupabase implements AuthRepository {
     } catch (e, st) {
       AppLogger.error('프로필 조회 실패', error: e, stackTrace: st);
       return null;
+    }
+  }
+
+  @override
+  Future<ProfileDto> updateProfileAsync({
+    required String nickname,
+    String? avatarUrl,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const AuthException('로그인이 필요합니다.');
+    }
+
+    final trimmedNickname = nickname.trim();
+    if (trimmedNickname.isEmpty) {
+      throw ArgumentError.value(nickname, 'nickname', '닉네임은 공백일 수 없습니다.');
+    }
+
+    final trimmedAvatar = avatarUrl?.trim();
+    // Supabase는 null을 명시적으로 보내야 컬럼을 초기화한다.
+    // 빈 문자열도 서버에는 null로 저장한다.
+    final avatarValue = (trimmedAvatar == null || trimmedAvatar.isEmpty)
+        ? null
+        : trimmedAvatar;
+
+    final payload = <String, dynamic>{
+      'nickname': trimmedNickname,
+      'avatar_url': avatarValue,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    AppLogger.network('profiles update 요청', data: payload);
+    try {
+      final row = await _client
+          .from('profiles')
+          .update(payload)
+          .eq('id', user.id)
+          .select()
+          .single();
+      AppLogger.network('profiles update 완료');
+      return ProfileDto.fromJson(row);
+    } catch (e, st) {
+      AppLogger.error('profiles update 실패', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> uploadAvatarAsync({
+    required Uint8List bytes,
+    required String contentType,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw const AuthException('로그인이 필요합니다.');
+    }
+
+    // 확장자는 contentType 기준. 실제 픽셀 처리는 앱 측에서 이미 완료된 상태.
+    final ext = switch (contentType) {
+      'image/jpeg' => 'jpg',
+      'image/png' => 'png',
+      'image/webp' => 'webp',
+      _ => throw ArgumentError.value(
+        contentType,
+        'contentType',
+        '지원하지 않는 이미지 형식입니다.',
+      ),
+    };
+    // 파일 경로는 `${userId}/avatar.${ext}`로 고정. 새로 업로드 시 upsert로
+    // 이전 파일을 덮어써 스토리지 낭비를 막는다.
+    final path = '${user.id}/avatar.$ext';
+
+    AppLogger.network(
+      'avatars upload 요청',
+      data: {'path': path, 'bytes': bytes.lengthInBytes, 'type': contentType},
+    );
+    try {
+      await _client.storage
+          .from('avatars')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(
+              contentType: contentType,
+              upsert: true,
+              cacheControl: '3600',
+            ),
+          );
+      final publicUrl = _client.storage.from('avatars').getPublicUrl(path);
+      // Supabase CDN은 동일 URL이라도 upsert 후 캐시가 남을 수 있어
+      // 쿼리스트링으로 버스팅한다.
+      final busted =
+          '$publicUrl?ts=${DateTime.now().millisecondsSinceEpoch}';
+      AppLogger.network('avatars upload 완료', data: busted);
+      return busted;
+    } catch (e, st) {
+      AppLogger.error('avatars upload 실패', error: e, stackTrace: st);
+      rethrow;
     }
   }
 
