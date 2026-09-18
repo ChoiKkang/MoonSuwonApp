@@ -14,6 +14,10 @@ import 'package:dalbit_suwon/features/auth/data/auth_repository.dart'
 import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart'
     show ProfileDto, isApplePrivateRelayEmail;
 
+// mypage_page.dart의 프로필 닉네임 표시 폴백과 동일한 문구.
+// provider(예: Apple 재인증)가 이름을 주지 않는 신규 가입 시에만 사용한다.
+const _defaultNickname = '달빛수원 회원';
+
 class AuthRepositorySupabase implements AuthRepository {
   final _client = Supabase.instance.client;
 
@@ -298,14 +302,32 @@ class AuthRepositorySupabase implements AuthRepository {
         nonEmpty(user.email) ??
         nonEmpty(providerEmail) ??
         nonEmpty(metadata['email'] as String?);
+
+    var resolvedNickname =
+        nonEmpty(providerNickname) ??
+        nonEmpty(metadata['name'] as String?) ??
+        nonEmpty(metadata['full_name'] as String?) ??
+        nonEmpty(metadata['user_name'] as String?);
+
+    if (resolvedNickname == null) {
+      // provider가 이름을 안 준 경우(예: Apple은 최초 인증 시에만 이름을
+      // 제공하고, 탈퇴 후 재로그인해도 이 상태는 초기화되지 않는다).
+      // 기존 프로필이 있다면 nickname을 건드리지 않아 사용자가 직접
+      // 설정한 값을 보존하고, 신규 가입인 경우에만 기본 닉네임을 채운다.
+      final existingProfile = await _client
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+      if (existingProfile == null) {
+        resolvedNickname = _defaultNickname;
+      }
+    }
+
     final dto = ProfileDto(
       id: user.id,
       email: profileEmail,
-      nickname:
-          nonEmpty(providerNickname) ??
-          (metadata['name'] as String?) ??
-          (metadata['full_name'] as String?) ??
-          (metadata['user_name'] as String?),
+      nickname: resolvedNickname,
       avatarUrl:
           (metadata['avatar_url'] as String?) ??
           (metadata['picture'] as String?),
