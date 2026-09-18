@@ -94,7 +94,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    _SectionHeader(title: '지금 가기 좋은 스팟'),
+                    _SectionHeader(
+                      title: '지금 가기 좋은 스팟',
+                      actionLabel: '모두 보기',
+                      onActionTap: () => context.push('/now-good-spots'),
+                    ),
                     const SizedBox(height: 16),
                     const _NowGoodSpotSection(),
                     const SizedBox(height: 100),
