@@ -58,7 +58,7 @@ void main() {
         // Then the real HTTP request and mapped output satisfy the contract.
         expect(requestPath, ['/rest/v1/rpc/get_now_good_spots']);
         expect(requestBodies, [
-          {'p_lat': null, 'p_lng': null, 'p_limit': 2},
+          {'p_lat': null, 'p_lng': null, 'p_limit': 20},
         ]);
         expect(summaries, hasLength(1));
         final summary = summaries.single;

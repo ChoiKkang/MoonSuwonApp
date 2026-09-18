@@ -45,52 +45,68 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            // 상단 네비게이션 바(SliverAppBar)는 홈 화면에서 hidden 처리한다.
-            // 히어로 카피가 바로 노출되어 야경 콘텐츠의 몰입도를 높인다.
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 24),
-                  _HeroSection(),
-                  const SizedBox(height: 32),
-                  _SectionHeader(
-                    title: '추천 데이트 코스',
-                    actionLabel: '모두 보기',
-                    onActionTap: () => context.push('/courses'),
-                  ),
-                  const SizedBox(height: 16),
-                ]),
+        child: RefreshIndicator(
+          color: AppColors.moonlightGold,
+          backgroundColor: AppColors.surfaceContainer,
+          onRefresh: () async {
+            ref.invalidate(coursesProvider);
+            ref.invalidate(nowGoodSpotsProvider);
+            await Future.wait([
+              ref.read(coursesProvider.future),
+              ref.read(nowGoodSpotsProvider.future),
+            ]);
+          },
+          child: CustomScrollView(
+            slivers: [
+              // 상단 네비게이션 바(SliverAppBar)는 홈 화면에서 hidden 처리한다.
+              // 히어로 카피가 바로 노출되어 야경 콘텐츠의 몰입도를 높인다.
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 24),
+                    _HeroSection(),
+                    const SizedBox(height: 32),
+                    _SectionHeader(
+                      title: '추천 데이트 코스',
+                      actionLabel: '모두 보기',
+                      onActionTap: () => context.push('/courses'),
+                    ),
+                    const SizedBox(height: 16),
+                  ]),
+                ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: coursesAsync.when(
-                loading: () => const SizedBox(
-                  height: 200,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.moonlightGold,
+              SliverToBoxAdapter(
+                child: coursesAsync.when(
+                  loading: () => const SizedBox(
+                    height: 200,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.moonlightGold,
+                      ),
                     ),
                   ),
+                  error: (e, _) => Center(child: Text('오류: $e')),
+                  data: (courses) => _CourseCardList(courses: courses),
                 ),
-                error: (e, _) => Center(child: Text('오류: $e')),
-                data: (courses) => _CourseCardList(courses: courses),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _SectionHeader(title: '지금 가기 좋은 스팟'),
-                  const SizedBox(height: 16),
-                  const _NowGoodSpotSection(),
-                  const SizedBox(height: 100),
-                ]),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _SectionHeader(
+                      title: '지금 가기 좋은 스팟',
+                      actionLabel: '모두 보기',
+                      onActionTap: () => context.push('/now-good-spots'),
+                    ),
+                    const SizedBox(height: 16),
+                    const _NowGoodSpotSection(),
+                    const SizedBox(height: 100),
+                  ]),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNav(currentTab: AppBottomNavTab.home),

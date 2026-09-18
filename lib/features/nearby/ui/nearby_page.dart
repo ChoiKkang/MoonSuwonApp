@@ -259,43 +259,46 @@ class _NearbySheet extends StatelessWidget {
       decoration: const BoxDecoration(
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: AppColors.glassBorder, width: 1),
-        ),
+        border: Border(top: BorderSide(color: AppColors.glassBorder, width: 1)),
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        child: CustomScrollView(
-          controller: scrollController,
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  const SizedBox(height: 8),
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerHigh,
-                      borderRadius: BorderRadius.circular(2),
+        child: RefreshIndicator(
+          color: AppColors.moonlightGold,
+          backgroundColor: AppColors.surfaceContainer,
+          onRefresh: onRefresh,
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _ListHeader(placesAsync: placesAsync),
-                  const SizedBox(height: 8),
-                  const NearbyActiveFiltersRow(),
-                  const SizedBox(height: 4),
-                ],
+                    const SizedBox(height: 12),
+                    _ListHeader(placesAsync: placesAsync),
+                    const SizedBox(height: 8),
+                    const NearbyActiveFiltersRow(),
+                    const SizedBox(height: 4),
+                  ],
+                ),
               ),
-            ),
-            _NearbySheetBody(
-              placesAsync: placesAsync,
-              selectedPlaceId: selectedPlaceId,
-              cardKeys: cardKeys,
-              onCardTap: onCardTap,
-              onRefresh: onRefresh,
-            ),
-          ],
+              _NearbySheetBody(
+                placesAsync: placesAsync,
+                selectedPlaceId: selectedPlaceId,
+                cardKeys: cardKeys,
+                onCardTap: onCardTap,
+                onRefresh: onRefresh,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -532,9 +535,7 @@ class _EmptyView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               '주변에 아직 등록된 스팟이 없어요',
-              style: AppTextStyles.bodyMd.copyWith(
-                color: AppColors.onSurface,
-              ),
+              style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurface),
             ),
             const SizedBox(height: 4),
             Text(

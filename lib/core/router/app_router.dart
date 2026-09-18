@@ -19,6 +19,8 @@ import 'package:dalbit_suwon/features/nearby/ui/nearby_page.dart'
     show NearbyPage;
 import 'package:dalbit_suwon/features/spot/ui/spot_detail_page.dart'
     show SpotDetailPage;
+import 'package:dalbit_suwon/features/spot/ui/now_good_spots_list_page.dart'
+    show NowGoodSpotsListPage;
 import 'package:dalbit_suwon/features/auth/ui/auth_login_page.dart'
     show AuthLoginPage;
 import 'package:dalbit_suwon/features/auth/ui/profile_edit_page.dart'
@@ -85,6 +87,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/courses',
         builder: (context, state) => const CoursesListPage(),
+      ),
+      GoRoute(
+        path: '/now-good-spots',
+        builder: (context, state) => const NowGoodSpotsListPage(),
       ),
       GoRoute(
         path: '/course/:id',
