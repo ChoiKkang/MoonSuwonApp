@@ -49,8 +49,12 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
   }
 
   @override
-  Future<List<SpotSummary>> fetchNowGoodSpotsAsync() async {
-    const query = NowGoodSpotsQueryDto();
+  Future<List<SpotSummary>> fetchNowGoodSpotsAsync({
+    double? lat,
+    double? lng,
+    int limit = 20,
+  }) async {
+    final query = NowGoodSpotsQueryDto(lat: lat, lng: lng, limit: limit);
     final rows =
         await _client.rpc('get_now_good_spots', params: query.toJson())
             as List<dynamic>;

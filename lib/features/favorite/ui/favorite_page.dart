@@ -60,18 +60,30 @@ class _FavoritePageState extends ConsumerState<FavoritePage> {
             ),
             if (!isLoggedIn) const _LoginSyncBanner(),
             Expanded(
-              child: switch (_tab) {
-                _FavoriteTab.course => coursesAsync.when(
-                  loading: _loadingIndicator,
-                  error: (e, _) => _errorBox('$e'),
-                  data: (courses) => _CourseList(courses: courses),
-                ),
-                _FavoriteTab.spot => spotsAsync.when(
-                  loading: _loadingIndicator,
-                  error: (e, _) => _errorBox('$e'),
-                  data: (spots) => _SpotList(spots: spots),
-                ),
-              },
+              child: RefreshIndicator(
+                color: AppColors.moonlightGold,
+                backgroundColor: AppColors.surfaceContainer,
+                onRefresh: () async {
+                  ref.invalidate(favoriteCoursesProvider);
+                  ref.invalidate(favoriteSpotsProvider);
+                  await Future.wait([
+                    ref.read(favoriteCoursesProvider.future),
+                    ref.read(favoriteSpotsProvider.future),
+                  ]);
+                },
+                child: switch (_tab) {
+                  _FavoriteTab.course => coursesAsync.when(
+                    loading: _loadingIndicator,
+                    error: (e, _) => _errorBox('$e'),
+                    data: (courses) => _CourseList(courses: courses),
+                  ),
+                  _FavoriteTab.spot => spotsAsync.when(
+                    loading: _loadingIndicator,
+                    error: (e, _) => _errorBox('$e'),
+                    data: (spots) => _SpotList(spots: spots),
+                  ),
+                },
+              ),
             ),
           ],
         ),

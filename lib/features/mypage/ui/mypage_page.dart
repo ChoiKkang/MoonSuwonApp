@@ -15,8 +15,10 @@ import 'package:dalbit_suwon/core/notification/notification_provider.dart'
 import 'package:dalbit_suwon/core/notification/notification_service.dart'
     show NotificationAccessStatus;
 import 'package:dalbit_suwon/core/theme/app_colors.dart' show AppColors;
-import 'package:dalbit_suwon/core/theme/app_text_styles.dart' show AppTextStyles;
-import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart' show ProfileDto;
+import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
+    show AppTextStyles;
+import 'package:dalbit_suwon/features/auth/data/models/profile_dto.dart'
+    show ProfileDto;
 import 'package:dalbit_suwon/features/auth/provider/auth_provider.dart'
     show authNotifierProvider, currentProfileProvider;
 import 'package:dalbit_suwon/features/course/data/models/course_progress_dto.dart'
@@ -52,73 +54,89 @@ class MyPagePage extends ConsumerWidget {
             child: CircularProgressIndicator(color: AppColors.moonlightGold),
           ),
           error: (e, _) => Center(child: Text('오류: $e')),
-          data: (summary) => CustomScrollView(
-            slivers: [
-              _MyPageAppBar(isLoggedIn: isLoggedIn),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    const SizedBox(height: 8),
-                    isLoggedIn
-                        ? profileAsync.when(
-                            loading: () => const _ProfileCardLoading(),
-                            error: (e, _) => _ProfileCardLoggedIn(profile: null),
-                            data: (profile) => _ProfileCardLoggedIn(profile: profile),
-                          )
-                        : const _ProfileCardGuest(),
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Text('나의 활동', style: AppTextStyles.headlineMd),
-                        const Spacer(),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => context.push('/mypage/history'),
-                          child: Padding(
-                            // 터치 영역 확보
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 8,
-                              horizontal: 4,
-                            ),
-                            child: Text(
-                              '내 기록보기 >',
-                              style: AppTextStyles.labelMd.copyWith(
-                                color: AppColors.onSurfaceVariant,
+          data: (summary) => RefreshIndicator(
+            color: AppColors.moonlightGold,
+            backgroundColor: AppColors.surfaceContainer,
+            onRefresh: () async {
+              ref.invalidate(myPageSummaryProvider);
+              ref.invalidate(currentProfileProvider);
+              await Future.wait([
+                ref.read(myPageSummaryProvider.future),
+                ref.read(currentProfileProvider.future),
+              ]);
+            },
+            child: CustomScrollView(
+              slivers: [
+                _MyPageAppBar(isLoggedIn: isLoggedIn),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      const SizedBox(height: 8),
+                      isLoggedIn
+                          ? profileAsync.when(
+                              loading: () => const _ProfileCardLoading(),
+                              error: (e, _) =>
+                                  _ProfileCardLoggedIn(profile: null),
+                              data: (profile) =>
+                                  _ProfileCardLoggedIn(profile: profile),
+                            )
+                          : const _ProfileCardGuest(),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Text('나의 활동', style: AppTextStyles.headlineMd),
+                          const Spacer(),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => context.push('/mypage/history'),
+                            child: Padding(
+                              // 터치 영역 확보
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 4,
                               ),
+                              child: Text(
+                                '내 기록보기 >',
+                                style: AppTextStyles.labelMd.copyWith(
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (summary.recentCourse != null) ...[
+                        _RecentCourseCard(course: summary.recentCourse!),
+                        const SizedBox(height: 16),
+                      ],
+                      _StatsRow(summary: summary),
+                      if (!isLoggedIn) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          '로그인 시 기기 간 동기화',
+                          style: AppTextStyles.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant.withValues(
+                              alpha: 0.6,
                             ),
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    if (summary.recentCourse != null) ...[
-                      _RecentCourseCard(course: summary.recentCourse!),
+                      const SizedBox(height: 32),
+                      Text('설정', style: AppTextStyles.headlineMd),
                       const SizedBox(height: 16),
-                    ],
-                    _StatsRow(summary: summary),
-                    if (!isLoggedIn) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        '로그인 시 기기 간 동기화',
-                        style: AppTextStyles.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 32),
-                    Text('설정', style: AppTextStyles.headlineMd),
-                    const SizedBox(height: 16),
-                    _SettingsList(),
-                    if (isLoggedIn) ...[
-                      const SizedBox(height: 8),
-                      _AccountActions(),
-                    ],
-                    const SizedBox(height: 100),
-                  ]),
+                      _SettingsList(),
+                      if (isLoggedIn) ...[
+                        const SizedBox(height: 8),
+                        _AccountActions(),
+                      ],
+                      const SizedBox(height: 100),
+                    ]),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -148,8 +166,11 @@ class _MyPageAppBar extends StatelessWidget {
           ),
           const Spacer(),
           if (isLoggedIn)
-            Icon(Icons.notifications_outlined,
-                color: AppColors.onSurfaceVariant, size: 24),
+            Icon(
+              Icons.notifications_outlined,
+              color: AppColors.onSurfaceVariant,
+              size: 24,
+            ),
         ],
       ),
     );
@@ -208,7 +229,9 @@ class _ProfileCardGuest extends StatelessWidget {
               ),
               child: Text(
                 '로그인 / 회원가입',
-                style: AppTextStyles.labelMd.copyWith(color: AppColors.background),
+                style: AppTextStyles.labelMd.copyWith(
+                  color: AppColors.background,
+                ),
               ),
             ),
           ),
@@ -302,7 +325,10 @@ class _ProfileCardLoggedIn extends StatelessWidget {
                 const SizedBox(height: 8),
                 if (profile != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.background.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(999),
@@ -311,7 +337,11 @@ class _ProfileCardLoggedIn extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified, size: 16, color: AppColors.onSurface),
+                        Icon(
+                          Icons.verified,
+                          size: 16,
+                          color: AppColors.onSurface,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           _loginProviderLabel(profile!.provider),
@@ -435,9 +465,8 @@ class _RecentCourseCard extends StatelessWidget {
                 Image.network(
                   heroImageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    color: AppColors.surfaceContainerHigh,
-                  ),
+                  errorBuilder: (_, _, _) =>
+                      Container(color: AppColors.surfaceContainerHigh),
                 )
               else
                 Container(color: AppColors.surfaceContainerHigh),
@@ -505,7 +534,9 @@ class _RecentCourseCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.moonlightGold.withValues(alpha: 0.15),
+                                color: AppColors.moonlightGold.withValues(
+                                  alpha: 0.15,
+                                ),
                                 blurRadius: 15,
                               ),
                             ],
@@ -763,9 +794,9 @@ class _AppVersionTile extends ConsumerWidget {
           .openStoreAsync(info.packageName);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('스토어를 열지 못했습니다: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('스토어를 열지 못했습니다: $e')));
       }
     }
   }
@@ -825,12 +856,14 @@ class _SettingsTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
-            Expanded(
-              child: Text(title, style: AppTextStyles.bodyMd),
-            ),
+            Expanded(child: Text(title, style: AppTextStyles.bodyMd)),
             if (trailing != null) trailing!,
             if (onTap != null && showChevron)
-              Icon(Icons.chevron_right, size: 20, color: AppColors.onSurfaceVariant),
+              Icon(
+                Icons.chevron_right,
+                size: 20,
+                color: AppColors.onSurfaceVariant,
+              ),
           ],
         ),
       ),
@@ -852,7 +885,9 @@ class _AccountActions extends StatelessWidget {
           ),
           child: Text(
             '로그아웃',
-            style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+            style: AppTextStyles.bodyMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
         ),
         TextButton(
@@ -872,9 +907,9 @@ class _AccountActions extends StatelessWidget {
 }
 
 void _showComingSoon(BuildContext context, String feature) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('$feature 기능은 준비 중입니다.')),
-  );
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(SnackBar(content: Text('$feature 기능은 준비 중입니다.')));
 }
 
 Future<void> _confirmLogoutAsync(BuildContext context) async {
@@ -934,7 +969,9 @@ Future<void> _confirmWithdrawAsync(BuildContext context) async {
   // false가 되어 _AccountActions가 즉시 unmount될 수 있다. 실패 시 에러
   // 스낵바를 띄우기 위한 context는 그대로 유효하므로(성공하지 않았으니
   // 위젯이 사라지지 않음) 그 경로는 기존 context.mounted 체크로 충분하다.
-  final notifier = ProviderScope.containerOf(context).read(authNotifierProvider.notifier);
+  final notifier = ProviderScope.containerOf(
+    context,
+  ).read(authNotifierProvider.notifier);
   final router = GoRouter.of(context);
   try {
     await notifier.deleteAccountAsync();

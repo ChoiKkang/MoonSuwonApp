@@ -95,7 +95,11 @@ class SpotRepositoryMock implements SpotRepository, NowGoodSpotsRepository {
   }
 
   @override
-  Future<List<SpotSummary>> fetchNowGoodSpotsAsync() async {
+  Future<List<SpotSummary>> fetchNowGoodSpotsAsync({
+    double? lat,
+    double? lng,
+    int limit = 20,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 300));
     const nowGoodSpotIds = ['spot-banghwasuryujeong', 'spot-hwaseonghaenggung'];
     return nowGoodSpotIds

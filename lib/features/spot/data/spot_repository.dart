@@ -8,5 +8,9 @@ abstract class SpotRepository {
 }
 
 abstract class NowGoodSpotsRepository {
-  Future<List<SpotSummary>> fetchNowGoodSpotsAsync();
+  Future<List<SpotSummary>> fetchNowGoodSpotsAsync({
+    double? lat,
+    double? lng,
+    int limit = 20,
+  });
 }
