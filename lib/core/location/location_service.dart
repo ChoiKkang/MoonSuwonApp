@@ -1,5 +1,10 @@
 import 'package:geolocator/geolocator.dart'
-    show Geolocator, LocationPermission, Position;
+    show
+        Geolocator,
+        LocationAccuracy,
+        LocationPermission,
+        LocationSettings,
+        Position;
 
 /// 위치 서비스 상태 + 권한 요청 결과를 하나의 값으로 표현한다.
 enum LocationAccessStatus {
@@ -50,6 +55,14 @@ class LocationService {
   }
 
   /// 현재 위치를 조회한다. 권한이 없거나 위치 서비스가 꺼져 있으면 `null`.
+  ///
+  /// `Geolocator.getCurrentPosition()`은 기본적으로 시간 제한이 없어, 권한은
+  /// 허용됐지만 위치 fix를 받지 못하는 상황(에뮬레이터/시뮬레이터, 콜드 GPS,
+  /// 실내 등)에서 무한 대기할 수 있다. 이 경우 상위 화면이 fallback(예: 수원화성
+  /// 기준)으로 넘어가지 못하고 무한 로딩에 걸린다. 이를 막기 위해:
+  ///   1) 마지막으로 알려진 위치가 있으면 즉시 사용해 빠르게 표시하고,
+  ///   2) 없으면 제한 시간(8초) 안에서 새 fix를 시도한다.
+  /// 타임아웃/오류 시 `null`을 반환해 상위에서 fallback 좌표로 진행하게 한다.
   Future<Position?> getCurrentPositionAsync() async {
     final status = await ensurePermissionAsync();
     if (status != LocationAccessStatus.granted) {
@@ -57,9 +70,19 @@ class LocationService {
     }
 
     try {
-      return await Geolocator.getCurrentPosition();
+      final lastKnown = await Geolocator.getLastKnownPosition();
+      if (lastKnown != null) {
+        return lastKnown;
+      }
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 8),
+        ),
+      );
     } catch (_) {
-      // 타임아웃/센서 오류 등은 상위에서 위치 없음으로 취급한다.
+      // 타임아웃(TimeoutException)/센서 오류 등은 위치 없음으로 취급해
+      // 상위에서 fallback 좌표로 진행한다.
       return null;
     }
   }
