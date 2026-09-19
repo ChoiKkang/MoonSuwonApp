@@ -77,7 +77,9 @@ class LocationService {
       return await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 8),
+          // 콜드 GPS에서 오래 붙잡히지 않도록 짧게 제한. 초과 시 TimeoutException
+          // → null → 상위에서 수원화성 fallback으로 빠르게 진행(데이터 즉시 표시).
+          timeLimit: Duration(seconds: 4),
         ),
       );
     } catch (_) {
