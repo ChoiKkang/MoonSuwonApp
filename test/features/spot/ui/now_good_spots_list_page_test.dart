@@ -96,5 +96,40 @@ void main() {
 
       expect(find.text('스팟 상세: banghwasuryujeong'), findsOneWidget);
     });
+
+    testWidgets('로딩 스피너가 데이터로 전환된다 (무한 로딩 아님)', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(400, 2200));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final router = GoRouter(
+        initialLocation: '/now-good-spots',
+        routes: [
+          GoRoute(
+            path: '/now-good-spots',
+            builder: (_, _) => const NowGoodSpotsListPage(),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            nowGoodSpotsProvider.overrideWith((_) async {
+              await Future<void>.delayed(const Duration(milliseconds: 300));
+              return _spots;
+            }),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      // 첫 프레임: 로딩 스피너.
+      await tester.pump();
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+      // 완료 후: 스피너 사라지고 데이터 표시.
+      await tester.pumpAndSettle();
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('방화수류정'), findsOneWidget);
+    });
   });
 }

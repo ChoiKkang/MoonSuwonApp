@@ -122,6 +122,59 @@ if (context.mounted) {
 
 ---
 
+## 브랜치 전략 / Git 워크플로우
+
+기준 브랜치는 `main`(배포) / `develop`(통합) 두 개다. 기능은 `feature/*`에서만 개발한다.
+
+| 구간 | 방식 | 이유 |
+|------|------|------|
+| `develop` → `feature/*` | 분기(branch) | 기능 격리 |
+| `feature/*` → `develop` | **rebase merge** (선형) | develop 히스토리를 깔끔하게 유지 |
+| `develop` → `main` | **merge commit** (`--no-ff`) | 릴리스 병합 지점을 히스토리에 보존 |
+
+### 1) 피처 시작 — 항상 develop에서 분기
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/<기능-요약>
+```
+
+작업 단위로 커밋 컨벤션(`[접두어]: 내용`)에 맞춰 커밋한다.
+
+### 2) feature/* → develop (rebase merge)
+
+피처 브랜치를 최신 develop 위로 **rebase**한 뒤 fast-forward로 합친다. 머지 커밋을 남기지 않아 develop 히스토리가 선형으로 유지된다.
+
+```bash
+git fetch origin
+git checkout feature/<기능-요약>
+git rebase origin/develop          # 충돌 시 해결 후 git rebase --continue
+git checkout develop
+git merge --ff-only feature/<기능-요약>
+git push origin develop
+git branch -d feature/<기능-요약>   # 머지된 브랜치 정리
+```
+
+- GitHub PR로 진행하면 **"Rebase and merge"** 버튼을 사용한다.
+- 이미 원격에 push한 피처 브랜치를 rebase한 경우에만 `--force-with-lease`로 갱신한다(본인 브랜치 한정).
+
+### 3) develop → main (merge commit)
+
+릴리스 시에는 **머지 커밋**을 생성해 병합 지점을 남긴다.
+
+```bash
+git checkout main
+git pull origin main
+git merge --no-ff develop -m "Merge branch 'develop'"
+git push origin main
+```
+
+- `--no-ff`로 fast-forward를 막아 릴리스 지점을 명시한다(현재 main 히스토리의 `Merge branch 'develop'` 패턴과 동일).
+- `main` 직접 커밋/force push 금지. 릴리스 담당자만 수행한다.
+
+---
+
 ## 디자인 토큰
 
 ```dart

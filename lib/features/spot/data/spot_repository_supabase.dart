@@ -27,6 +27,9 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
     }
     final place = PlaceBySlugDto.fromJson(Map<String, dynamic>.from(row as Map));
 
+    // get_place_by_slug RPC가 코어·반려동물·접근성(access_*)·오디오 해설
+    // (audio_stories)까지 한 번에 반환한다(마이그레이션 20260919280000).
+    // 별도 뷰 조회 없이 단일 RPC 결과만으로 상세를 구성한다.
     return SpotDetail(
       id: place.id,
       name: place.displayName,
@@ -45,6 +48,10 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
       missionPrompt: place.missionPrompt ?? '',
       missionRadiusM: place.missionRadiusM,
       nearbySpots: const [],
+      petPolicy: place.petPolicy ?? 'unknown',
+      petNote: place.petNote ?? '',
+      accessibility: place.accessibility,
+      audioStories: place.audioStories,
     );
   }
 

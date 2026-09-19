@@ -1,5 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import 'package:dalbit_suwon/features/spot/data/models/accessibility_facts.dart'
+    show AccessibilityFacts;
+import 'package:dalbit_suwon/features/spot/data/models/audio_story.dart'
+    show AudioStory;
+
 part 'spot_detail.freezed.dart';
 part 'spot_detail.g.dart';
 
@@ -35,8 +40,10 @@ abstract class SpotDetail with _$SpotDetail {
     required String missionPrompt,
     required int missionRadiusM,
     required List<LocalSpot> nearbySpots,
-    @Default('partial') String petPolicy,
+    @Default('unknown') String petPolicy,
     @Default('') String petNote,
+    @Default(AccessibilityFacts()) AccessibilityFacts accessibility,
+    @Default(<AudioStory>[]) List<AudioStory> audioStories,
   }) = _SpotDetail;
 
   factory SpotDetail.fromJson(Map<String, dynamic> json) =>

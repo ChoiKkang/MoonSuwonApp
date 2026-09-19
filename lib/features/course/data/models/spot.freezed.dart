@@ -219,7 +219,7 @@ return $default(_that.id,_that.name,_that.summary,_that.imageUrl,_that.lat,_that
 @JsonSerializable()
 
 class _Spot implements Spot {
-  const _Spot({required this.id, required this.name, required this.summary, required this.imageUrl, required this.lat, required this.lng, required this.missionRadiusM, required this.missionPrompt, this.status = SpotProgressStatus.pending, this.petPolicy = 'partial', this.petNote = ''});
+  const _Spot({required this.id, required this.name, required this.summary, required this.imageUrl, required this.lat, required this.lng, required this.missionRadiusM, required this.missionPrompt, this.status = SpotProgressStatus.pending, this.petPolicy = 'unknown', this.petNote = ''});
   factory _Spot.fromJson(Map<String, dynamic> json) => _$SpotFromJson(json);
 
 @override final  String id;

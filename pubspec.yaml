@@ -67,6 +67,9 @@ dependencies:
   # 로깅
   logger: ^2.5.0
 
+  # 오디오 해설(오디오북) 재생 — KTO 오디(Odii) 오디오 가이드 mp3 스트리밍
+  just_audio: ^0.10.6
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
