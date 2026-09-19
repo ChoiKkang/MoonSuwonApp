@@ -18,7 +18,7 @@ _Spot _$SpotFromJson(Map<String, dynamic> json) => _Spot(
   status:
       $enumDecodeNullable(_$SpotProgressStatusEnumMap, json['status']) ??
       SpotProgressStatus.pending,
-  petPolicy: json['petPolicy'] as String? ?? 'partial',
+  petPolicy: json['petPolicy'] as String? ?? 'unknown',
   petNote: json['petNote'] as String? ?? '',
 );
 

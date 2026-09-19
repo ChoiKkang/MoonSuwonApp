@@ -263,27 +263,109 @@ class _CourseSpotTimelineItem extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(bottom: isLast ? 0 : 24),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainer,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.glassBorder),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(spot.name, style: AppTextStyles.bodyMd.copyWith(
-                      fontWeight: FontWeight.w600,
-                    )),
-                    const SizedBox(height: 4),
-                    Text(spot.summary,
-                        style: AppTextStyles.labelSm.copyWith(
-                          color: AppColors.onSurfaceVariant,
-                        )),
-                  ],
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => context.push('/spot/${spot.id}'),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.glassBorder),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              spot.name,
+                              style: AppTextStyles.bodyMd.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              spot.summary,
+                              style: AppTextStyles.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                            if (_PetChip.labelFor(spot.petPolicy) != null) ...[
+                              const SizedBox(height: 10),
+                              _PetChip(policy: spot.petPolicy),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 코스 타임라인의 반려동물 동반 여부 칩.
+///
+/// 정책이 확인된 스팟(allowed/partial/not_allowed)에만 표시한다.
+/// unknown이면 [labelFor]가 null을 돌려주어 칩을 감춘다.
+class _PetChip extends StatelessWidget {
+  const _PetChip({required this.policy});
+
+  final String policy;
+
+  static String? labelFor(String policy) {
+    switch (policy) {
+      case 'allowed':
+        return '반려동물 동반 가능';
+      case 'partial':
+        return '반려동물 일부 가능';
+      case 'not_allowed':
+        return '반려동물 동반 불가';
+      default:
+        return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = labelFor(policy);
+    if (label == null) return const SizedBox.shrink();
+
+    final color = policy == 'not_allowed'
+        ? AppColors.outline
+        : AppColors.softAmber;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.pets, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTextStyles.labelSm.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

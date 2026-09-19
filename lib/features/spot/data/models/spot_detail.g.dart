@@ -43,8 +43,18 @@ _SpotDetail _$SpotDetailFromJson(Map<String, dynamic> json) => _SpotDetail(
   nearbySpots: (json['nearbySpots'] as List<dynamic>)
       .map((e) => LocalSpot.fromJson(e as Map<String, dynamic>))
       .toList(),
-  petPolicy: json['petPolicy'] as String? ?? 'partial',
+  petPolicy: json['petPolicy'] as String? ?? 'unknown',
   petNote: json['petNote'] as String? ?? '',
+  accessibility: json['accessibility'] == null
+      ? const AccessibilityFacts()
+      : AccessibilityFacts.fromJson(
+          json['accessibility'] as Map<String, dynamic>,
+        ),
+  audioStories:
+      (json['audioStories'] as List<dynamic>?)
+          ?.map((e) => AudioStory.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const <AudioStory>[],
 );
 
 Map<String, dynamic> _$SpotDetailToJson(_SpotDetail instance) =>
@@ -64,4 +74,6 @@ Map<String, dynamic> _$SpotDetailToJson(_SpotDetail instance) =>
       'nearbySpots': instance.nearbySpots,
       'petPolicy': instance.petPolicy,
       'petNote': instance.petNote,
+      'accessibility': instance.accessibility,
+      'audioStories': instance.audioStories,
     };

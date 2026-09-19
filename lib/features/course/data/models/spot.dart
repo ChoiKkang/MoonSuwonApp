@@ -17,7 +17,7 @@ abstract class Spot with _$Spot {
     required int missionRadiusM,
     required String missionPrompt,
     @Default(SpotProgressStatus.pending) SpotProgressStatus status,
-    @Default('partial') String petPolicy,
+    @Default('unknown') String petPolicy,
     @Default('') String petNote,
   }) = _Spot;
 

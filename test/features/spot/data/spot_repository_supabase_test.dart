@@ -165,4 +165,80 @@ void main() {
       }
     },
   );
+
+  test(
+    'maps pet policy and accessibility facts when the RPC provides them',
+    () async {
+      // Given a get_place_by_slug response extended with pet_* / access_* fields
+      // (the forward-compatible contract the web view already exposes).
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final response = <String, dynamic>{
+        'id': 'c2dd085a-dff6-40fc-9560-2376f89cc65e',
+        'slug': 'hwaseong-haenggung',
+        'official_name': '화성행궁',
+        'address_full': '경기도 수원시 팔달구',
+        'lat': 37.2836,
+        'lng': 127.0093,
+        'contact_phone': null,
+        'short_description': '조선 최대 규모의 행궁',
+        'recommended_stay_min': 60,
+        'category': 'heritage',
+        'display_name': '화성행궁',
+        'mission_radius_m': 100,
+        'night_highlight': null,
+        'photo_tip': null,
+        'mission_type': 'photo',
+        'mission_prompt': '신풍루 앞에서 인증샷을 남겨보세요.',
+        'couple_question': null,
+        'short_story': null,
+        'og_title': '화성행궁',
+        'og_description': null,
+        'og_image_url': null,
+        'images': [
+          {
+            'id': 'hero',
+            'image_url': 'https://example.com/haenggung.jpg',
+            'is_hero': true,
+            'display_order': 0,
+          },
+        ],
+        // 전방 호환 필드.
+        'pet_policy': 'allowed',
+        'pet_note_short': '외부 광장은 리드줄 착용 시 동반 가능',
+        'access_parking': '장애인 전용 주차구역이 있습니다.',
+        'access_help_dog': '안내견 동반이 가능합니다.',
+        'access_source_updated_at': '2026-06-05',
+      };
+      final subscription = server.listen((request) async {
+        request.response
+          ..statusCode = HttpStatus.ok
+          ..headers.contentType = ContentType.json
+          ..write(jsonEncode(response));
+        await request.response.close();
+      });
+      final client = SupabaseClient(
+        'http://${server.address.host}:${server.port}',
+        'test-publishable-key',
+      );
+
+      try {
+        final detail = await SpotRepositorySupabase(
+          client,
+        ).fetchSpotDetailAsync('hwaseong-haenggung');
+
+        expect(detail.petPolicy, 'allowed');
+        expect(detail.petNote, '외부 광장은 리드줄 착용 시 동반 가능');
+        expect(detail.accessibility.hasInfo, isTrue);
+        expect(detail.accessibility.groups.map((g) => g.title), [
+          '이동과 주차',
+          '안내와 보조',
+        ]);
+        expect(detail.accessibility.sourceUpdatedAt, '2026-06-05');
+      } finally {
+        await client.dispose();
+        await subscription.cancel();
+        await server.close(force: true);
+      }
+    },
+  );
 }

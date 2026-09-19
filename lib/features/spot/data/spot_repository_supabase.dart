@@ -45,6 +45,13 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
       missionPrompt: place.missionPrompt ?? '',
       missionRadiusM: place.missionRadiusM,
       nearbySpots: const [],
+      petPolicy: place.petPolicy ?? 'unknown',
+      petNote: place.petNote ?? '',
+      accessibility: place.accessibility,
+      // 오디오 해설은 장소당 여러 건이라 평면 RPC가 아닌 별도 뷰에서 읽어야 한다.
+      // 웹은 v_published_place_audio_stories(place_id 기준)를 조회한다. 앱에도
+      // get_place_audio_stories RPC가 준비되면 여기서 채운다. 그전까지는 빈 목록.
+      audioStories: const [],
     );
   }
 

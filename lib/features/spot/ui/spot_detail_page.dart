@@ -13,6 +13,12 @@ import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart'
     show SpotDetail, LocalSpot;
 import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
     show spotDetailProvider;
+import 'package:dalbit_suwon/features/spot/ui/widgets/accessibility_section.dart'
+    show AccessibilitySection;
+import 'package:dalbit_suwon/features/spot/ui/widgets/audio_story_section.dart'
+    show AudioStorySection;
+import 'package:dalbit_suwon/features/spot/ui/widgets/pet_policy_card.dart'
+    show PetPolicyCard;
 import 'package:dalbit_suwon/shared/widgets/glass_icon_button.dart'
     show GlassIconButton;
 import 'package:dalbit_suwon/shared/widgets/hero_image_header.dart'
@@ -118,6 +124,24 @@ class _SpotDetailContent extends StatelessWidget {
                   if (detail.romanticMoment.trim().isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _RomanticCard(text: detail.romanticMoment),
+                  ],
+                  if (PetPolicyCard.shouldShow(
+                    policy: detail.petPolicy,
+                    note: detail.petNote,
+                  )) ...[
+                    const SizedBox(height: 16),
+                    PetPolicyCard(
+                      policy: detail.petPolicy,
+                      note: detail.petNote,
+                    ),
+                  ],
+                  if (detail.accessibility.hasInfo) ...[
+                    const SizedBox(height: 16),
+                    AccessibilitySection(facts: detail.accessibility),
+                  ],
+                  if (detail.audioStories.isNotEmpty) ...[
+                    const SizedBox(height: 32),
+                    AudioStorySection(stories: detail.audioStories),
                   ],
                   const SizedBox(height: 32),
                   if (detail.nearbySpots.isNotEmpty) ...[

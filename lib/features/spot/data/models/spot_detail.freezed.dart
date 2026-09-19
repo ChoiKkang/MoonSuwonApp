@@ -296,7 +296,7 @@ as bool,
 /// @nodoc
 mixin _$SpotDetail {
 
- String get id; String get name; String get category; String get intro; String get heroImageUrl; double get lat; double get lng; String get nightHighlight; String get photoTip; String get romanticMoment; String get missionPrompt; int get missionRadiusM; List<LocalSpot> get nearbySpots; String get petPolicy; String get petNote;
+ String get id; String get name; String get category; String get intro; String get heroImageUrl; double get lat; double get lng; String get nightHighlight; String get photoTip; String get romanticMoment; String get missionPrompt; int get missionRadiusM; List<LocalSpot> get nearbySpots; String get petPolicy; String get petNote; AccessibilityFacts get accessibility; List<AudioStory> get audioStories;
 /// Create a copy of SpotDetail
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -309,16 +309,16 @@ $SpotDetailCopyWith<SpotDetail> get copyWith => _$SpotDetailCopyWithImpl<SpotDet
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SpotDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.heroImageUrl, heroImageUrl) || other.heroImageUrl == heroImageUrl)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.nightHighlight, nightHighlight) || other.nightHighlight == nightHighlight)&&(identical(other.photoTip, photoTip) || other.photoTip == photoTip)&&(identical(other.romanticMoment, romanticMoment) || other.romanticMoment == romanticMoment)&&(identical(other.missionPrompt, missionPrompt) || other.missionPrompt == missionPrompt)&&(identical(other.missionRadiusM, missionRadiusM) || other.missionRadiusM == missionRadiusM)&&const DeepCollectionEquality().equals(other.nearbySpots, nearbySpots)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.petNote, petNote) || other.petNote == petNote));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SpotDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.heroImageUrl, heroImageUrl) || other.heroImageUrl == heroImageUrl)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.nightHighlight, nightHighlight) || other.nightHighlight == nightHighlight)&&(identical(other.photoTip, photoTip) || other.photoTip == photoTip)&&(identical(other.romanticMoment, romanticMoment) || other.romanticMoment == romanticMoment)&&(identical(other.missionPrompt, missionPrompt) || other.missionPrompt == missionPrompt)&&(identical(other.missionRadiusM, missionRadiusM) || other.missionRadiusM == missionRadiusM)&&const DeepCollectionEquality().equals(other.nearbySpots, nearbySpots)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.petNote, petNote) || other.petNote == petNote)&&(identical(other.accessibility, accessibility) || other.accessibility == accessibility)&&const DeepCollectionEquality().equals(other.audioStories, audioStories));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,intro,heroImageUrl,lat,lng,nightHighlight,photoTip,romanticMoment,missionPrompt,missionRadiusM,const DeepCollectionEquality().hash(nearbySpots),petPolicy,petNote);
+int get hashCode => Object.hash(runtimeType,id,name,category,intro,heroImageUrl,lat,lng,nightHighlight,photoTip,romanticMoment,missionPrompt,missionRadiusM,const DeepCollectionEquality().hash(nearbySpots),petPolicy,petNote,accessibility,const DeepCollectionEquality().hash(audioStories));
 
 @override
 String toString() {
-  return 'SpotDetail(id: $id, name: $name, category: $category, intro: $intro, heroImageUrl: $heroImageUrl, lat: $lat, lng: $lng, nightHighlight: $nightHighlight, photoTip: $photoTip, romanticMoment: $romanticMoment, missionPrompt: $missionPrompt, missionRadiusM: $missionRadiusM, nearbySpots: $nearbySpots, petPolicy: $petPolicy, petNote: $petNote)';
+  return 'SpotDetail(id: $id, name: $name, category: $category, intro: $intro, heroImageUrl: $heroImageUrl, lat: $lat, lng: $lng, nightHighlight: $nightHighlight, photoTip: $photoTip, romanticMoment: $romanticMoment, missionPrompt: $missionPrompt, missionRadiusM: $missionRadiusM, nearbySpots: $nearbySpots, petPolicy: $petPolicy, petNote: $petNote, accessibility: $accessibility, audioStories: $audioStories)';
 }
 
 
@@ -329,7 +329,7 @@ abstract mixin class $SpotDetailCopyWith<$Res>  {
   factory $SpotDetailCopyWith(SpotDetail value, $Res Function(SpotDetail) _then) = _$SpotDetailCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String category, String intro, String heroImageUrl, double lat, double lng, String nightHighlight, String photoTip, String romanticMoment, String missionPrompt, int missionRadiusM, List<LocalSpot> nearbySpots, String petPolicy, String petNote
+ String id, String name, String category, String intro, String heroImageUrl, double lat, double lng, String nightHighlight, String photoTip, String romanticMoment, String missionPrompt, int missionRadiusM, List<LocalSpot> nearbySpots, String petPolicy, String petNote, AccessibilityFacts accessibility, List<AudioStory> audioStories
 });
 
 
@@ -346,7 +346,7 @@ class _$SpotDetailCopyWithImpl<$Res>
 
 /// Create a copy of SpotDetail
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? category = null,Object? intro = null,Object? heroImageUrl = null,Object? lat = null,Object? lng = null,Object? nightHighlight = null,Object? photoTip = null,Object? romanticMoment = null,Object? missionPrompt = null,Object? missionRadiusM = null,Object? nearbySpots = null,Object? petPolicy = null,Object? petNote = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? category = null,Object? intro = null,Object? heroImageUrl = null,Object? lat = null,Object? lng = null,Object? nightHighlight = null,Object? photoTip = null,Object? romanticMoment = null,Object? missionPrompt = null,Object? missionRadiusM = null,Object? nearbySpots = null,Object? petPolicy = null,Object? petNote = null,Object? accessibility = null,Object? audioStories = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -363,7 +363,9 @@ as String,missionRadiusM: null == missionRadiusM ? _self.missionRadiusM : missio
 as int,nearbySpots: null == nearbySpots ? _self.nearbySpots : nearbySpots // ignore: cast_nullable_to_non_nullable
 as List<LocalSpot>,petPolicy: null == petPolicy ? _self.petPolicy : petPolicy // ignore: cast_nullable_to_non_nullable
 as String,petNote: null == petNote ? _self.petNote : petNote // ignore: cast_nullable_to_non_nullable
-as String,
+as String,accessibility: null == accessibility ? _self.accessibility : accessibility // ignore: cast_nullable_to_non_nullable
+as AccessibilityFacts,audioStories: null == audioStories ? _self.audioStories : audioStories // ignore: cast_nullable_to_non_nullable
+as List<AudioStory>,
   ));
 }
 
@@ -448,10 +450,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String category,  String intro,  String heroImageUrl,  double lat,  double lng,  String nightHighlight,  String photoTip,  String romanticMoment,  String missionPrompt,  int missionRadiusM,  List<LocalSpot> nearbySpots,  String petPolicy,  String petNote)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String category,  String intro,  String heroImageUrl,  double lat,  double lng,  String nightHighlight,  String photoTip,  String romanticMoment,  String missionPrompt,  int missionRadiusM,  List<LocalSpot> nearbySpots,  String petPolicy,  String petNote,  AccessibilityFacts accessibility,  List<AudioStory> audioStories)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SpotDetail() when $default != null:
-return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUrl,_that.lat,_that.lng,_that.nightHighlight,_that.photoTip,_that.romanticMoment,_that.missionPrompt,_that.missionRadiusM,_that.nearbySpots,_that.petPolicy,_that.petNote);case _:
+return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUrl,_that.lat,_that.lng,_that.nightHighlight,_that.photoTip,_that.romanticMoment,_that.missionPrompt,_that.missionRadiusM,_that.nearbySpots,_that.petPolicy,_that.petNote,_that.accessibility,_that.audioStories);case _:
   return orElse();
 
 }
@@ -469,10 +471,10 @@ return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String category,  String intro,  String heroImageUrl,  double lat,  double lng,  String nightHighlight,  String photoTip,  String romanticMoment,  String missionPrompt,  int missionRadiusM,  List<LocalSpot> nearbySpots,  String petPolicy,  String petNote)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String category,  String intro,  String heroImageUrl,  double lat,  double lng,  String nightHighlight,  String photoTip,  String romanticMoment,  String missionPrompt,  int missionRadiusM,  List<LocalSpot> nearbySpots,  String petPolicy,  String petNote,  AccessibilityFacts accessibility,  List<AudioStory> audioStories)  $default,) {final _that = this;
 switch (_that) {
 case _SpotDetail():
-return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUrl,_that.lat,_that.lng,_that.nightHighlight,_that.photoTip,_that.romanticMoment,_that.missionPrompt,_that.missionRadiusM,_that.nearbySpots,_that.petPolicy,_that.petNote);case _:
+return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUrl,_that.lat,_that.lng,_that.nightHighlight,_that.photoTip,_that.romanticMoment,_that.missionPrompt,_that.missionRadiusM,_that.nearbySpots,_that.petPolicy,_that.petNote,_that.accessibility,_that.audioStories);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -489,10 +491,10 @@ return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUr
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String category,  String intro,  String heroImageUrl,  double lat,  double lng,  String nightHighlight,  String photoTip,  String romanticMoment,  String missionPrompt,  int missionRadiusM,  List<LocalSpot> nearbySpots,  String petPolicy,  String petNote)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String category,  String intro,  String heroImageUrl,  double lat,  double lng,  String nightHighlight,  String photoTip,  String romanticMoment,  String missionPrompt,  int missionRadiusM,  List<LocalSpot> nearbySpots,  String petPolicy,  String petNote,  AccessibilityFacts accessibility,  List<AudioStory> audioStories)?  $default,) {final _that = this;
 switch (_that) {
 case _SpotDetail() when $default != null:
-return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUrl,_that.lat,_that.lng,_that.nightHighlight,_that.photoTip,_that.romanticMoment,_that.missionPrompt,_that.missionRadiusM,_that.nearbySpots,_that.petPolicy,_that.petNote);case _:
+return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUrl,_that.lat,_that.lng,_that.nightHighlight,_that.photoTip,_that.romanticMoment,_that.missionPrompt,_that.missionRadiusM,_that.nearbySpots,_that.petPolicy,_that.petNote,_that.accessibility,_that.audioStories);case _:
   return null;
 
 }
@@ -504,7 +506,7 @@ return $default(_that.id,_that.name,_that.category,_that.intro,_that.heroImageUr
 @JsonSerializable()
 
 class _SpotDetail implements SpotDetail {
-  const _SpotDetail({required this.id, required this.name, required this.category, required this.intro, required this.heroImageUrl, required this.lat, required this.lng, required this.nightHighlight, required this.photoTip, required this.romanticMoment, required this.missionPrompt, required this.missionRadiusM, required final  List<LocalSpot> nearbySpots, this.petPolicy = 'partial', this.petNote = ''}): _nearbySpots = nearbySpots;
+  const _SpotDetail({required this.id, required this.name, required this.category, required this.intro, required this.heroImageUrl, required this.lat, required this.lng, required this.nightHighlight, required this.photoTip, required this.romanticMoment, required this.missionPrompt, required this.missionRadiusM, required final  List<LocalSpot> nearbySpots, this.petPolicy = 'unknown', this.petNote = '', this.accessibility = const AccessibilityFacts(), final  List<AudioStory> audioStories = const <AudioStory>[]}): _nearbySpots = nearbySpots,_audioStories = audioStories;
   factory _SpotDetail.fromJson(Map<String, dynamic> json) => _$SpotDetailFromJson(json);
 
 @override final  String id;
@@ -528,6 +530,14 @@ class _SpotDetail implements SpotDetail {
 
 @override@JsonKey() final  String petPolicy;
 @override@JsonKey() final  String petNote;
+@override@JsonKey() final  AccessibilityFacts accessibility;
+ final  List<AudioStory> _audioStories;
+@override@JsonKey() List<AudioStory> get audioStories {
+  if (_audioStories is EqualUnmodifiableListView) return _audioStories;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_audioStories);
+}
+
 
 /// Create a copy of SpotDetail
 /// with the given fields replaced by the non-null parameter values.
@@ -542,16 +552,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SpotDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.heroImageUrl, heroImageUrl) || other.heroImageUrl == heroImageUrl)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.nightHighlight, nightHighlight) || other.nightHighlight == nightHighlight)&&(identical(other.photoTip, photoTip) || other.photoTip == photoTip)&&(identical(other.romanticMoment, romanticMoment) || other.romanticMoment == romanticMoment)&&(identical(other.missionPrompt, missionPrompt) || other.missionPrompt == missionPrompt)&&(identical(other.missionRadiusM, missionRadiusM) || other.missionRadiusM == missionRadiusM)&&const DeepCollectionEquality().equals(other._nearbySpots, _nearbySpots)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.petNote, petNote) || other.petNote == petNote));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SpotDetail&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.category, category) || other.category == category)&&(identical(other.intro, intro) || other.intro == intro)&&(identical(other.heroImageUrl, heroImageUrl) || other.heroImageUrl == heroImageUrl)&&(identical(other.lat, lat) || other.lat == lat)&&(identical(other.lng, lng) || other.lng == lng)&&(identical(other.nightHighlight, nightHighlight) || other.nightHighlight == nightHighlight)&&(identical(other.photoTip, photoTip) || other.photoTip == photoTip)&&(identical(other.romanticMoment, romanticMoment) || other.romanticMoment == romanticMoment)&&(identical(other.missionPrompt, missionPrompt) || other.missionPrompt == missionPrompt)&&(identical(other.missionRadiusM, missionRadiusM) || other.missionRadiusM == missionRadiusM)&&const DeepCollectionEquality().equals(other._nearbySpots, _nearbySpots)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.petNote, petNote) || other.petNote == petNote)&&(identical(other.accessibility, accessibility) || other.accessibility == accessibility)&&const DeepCollectionEquality().equals(other._audioStories, _audioStories));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,name,category,intro,heroImageUrl,lat,lng,nightHighlight,photoTip,romanticMoment,missionPrompt,missionRadiusM,const DeepCollectionEquality().hash(_nearbySpots),petPolicy,petNote);
+int get hashCode => Object.hash(runtimeType,id,name,category,intro,heroImageUrl,lat,lng,nightHighlight,photoTip,romanticMoment,missionPrompt,missionRadiusM,const DeepCollectionEquality().hash(_nearbySpots),petPolicy,petNote,accessibility,const DeepCollectionEquality().hash(_audioStories));
 
 @override
 String toString() {
-  return 'SpotDetail(id: $id, name: $name, category: $category, intro: $intro, heroImageUrl: $heroImageUrl, lat: $lat, lng: $lng, nightHighlight: $nightHighlight, photoTip: $photoTip, romanticMoment: $romanticMoment, missionPrompt: $missionPrompt, missionRadiusM: $missionRadiusM, nearbySpots: $nearbySpots, petPolicy: $petPolicy, petNote: $petNote)';
+  return 'SpotDetail(id: $id, name: $name, category: $category, intro: $intro, heroImageUrl: $heroImageUrl, lat: $lat, lng: $lng, nightHighlight: $nightHighlight, photoTip: $photoTip, romanticMoment: $romanticMoment, missionPrompt: $missionPrompt, missionRadiusM: $missionRadiusM, nearbySpots: $nearbySpots, petPolicy: $petPolicy, petNote: $petNote, accessibility: $accessibility, audioStories: $audioStories)';
 }
 
 
@@ -562,7 +572,7 @@ abstract mixin class _$SpotDetailCopyWith<$Res> implements $SpotDetailCopyWith<$
   factory _$SpotDetailCopyWith(_SpotDetail value, $Res Function(_SpotDetail) _then) = __$SpotDetailCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String category, String intro, String heroImageUrl, double lat, double lng, String nightHighlight, String photoTip, String romanticMoment, String missionPrompt, int missionRadiusM, List<LocalSpot> nearbySpots, String petPolicy, String petNote
+ String id, String name, String category, String intro, String heroImageUrl, double lat, double lng, String nightHighlight, String photoTip, String romanticMoment, String missionPrompt, int missionRadiusM, List<LocalSpot> nearbySpots, String petPolicy, String petNote, AccessibilityFacts accessibility, List<AudioStory> audioStories
 });
 
 
@@ -579,7 +589,7 @@ class __$SpotDetailCopyWithImpl<$Res>
 
 /// Create a copy of SpotDetail
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? category = null,Object? intro = null,Object? heroImageUrl = null,Object? lat = null,Object? lng = null,Object? nightHighlight = null,Object? photoTip = null,Object? romanticMoment = null,Object? missionPrompt = null,Object? missionRadiusM = null,Object? nearbySpots = null,Object? petPolicy = null,Object? petNote = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? category = null,Object? intro = null,Object? heroImageUrl = null,Object? lat = null,Object? lng = null,Object? nightHighlight = null,Object? photoTip = null,Object? romanticMoment = null,Object? missionPrompt = null,Object? missionRadiusM = null,Object? nearbySpots = null,Object? petPolicy = null,Object? petNote = null,Object? accessibility = null,Object? audioStories = null,}) {
   return _then(_SpotDetail(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -596,7 +606,9 @@ as String,missionRadiusM: null == missionRadiusM ? _self.missionRadiusM : missio
 as int,nearbySpots: null == nearbySpots ? _self._nearbySpots : nearbySpots // ignore: cast_nullable_to_non_nullable
 as List<LocalSpot>,petPolicy: null == petPolicy ? _self.petPolicy : petPolicy // ignore: cast_nullable_to_non_nullable
 as String,petNote: null == petNote ? _self.petNote : petNote // ignore: cast_nullable_to_non_nullable
-as String,
+as String,accessibility: null == accessibility ? _self.accessibility : accessibility // ignore: cast_nullable_to_non_nullable
+as AccessibilityFacts,audioStories: null == audioStories ? _self._audioStories : audioStories // ignore: cast_nullable_to_non_nullable
+as List<AudioStory>,
   ));
 }
 
