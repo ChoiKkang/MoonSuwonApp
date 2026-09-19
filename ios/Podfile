@@ -39,5 +39,11 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+    # Flutter 기본 min(13.0)이 Pods.xcodeproj에 주입되어 Xcode 배포 타깃 지원
+    # 범위(15.0~27.0)를 벗어나 아카이브가 실패한다. 앱 최소 지원 버전(iOS 15.0)으로
+    # 모든 Pod 타깃을 강제해 정합성을 맞춘다.
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+    end
   end
 end
