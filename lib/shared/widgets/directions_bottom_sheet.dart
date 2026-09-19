@@ -8,9 +8,9 @@ import 'package:dalbit_suwon/core/theme/app_text_styles.dart'
 
 /// 외부 지도 앱으로 길찾기를 여는 공통 유틸리티.
 ///
-/// 카카오맵/네이버맵/구글맵 중 사용자가 선택한 앱으로 목적지 좌표를 전달한다.
+/// 카카오맵/네이버맵/구글맵/Apple 지도 중 사용자가 선택한 앱으로 목적지 좌표를 전달한다.
 /// 프로필 편집의 "사진 선택" 시트와 동일한 톤의 [showModalBottomSheet]를 사용해
-/// 3개 옵션(카카오/네이버/구글)을 보여준다.
+/// 4개 옵션(카카오/네이버/구글/Apple 지도)을 보여준다.
 ///
 /// 각 옵션은 우선 앱 딥링크 스킴을 시도하고, 실패하면 웹 URL로 폴백한다.
 class DirectionsBottomSheet {
@@ -90,6 +90,13 @@ class DirectionsBottomSheet {
               onTap: () => Navigator.of(sheetContext)
                   .pop(_DirectionsProvider.google),
             ),
+            _DirectionsOptionTile(
+              label: 'Apple 지도로 길찾기',
+              icon: Icons.apple,
+              iconColor: AppColors.onSurface,
+              onTap: () => Navigator.of(sheetContext)
+                  .pop(_DirectionsProvider.apple),
+            ),
             const SizedBox(height: 8),
           ],
         ),
@@ -152,6 +159,13 @@ class DirectionsBottomSheet {
           '&destination_place_id=&travelmode=walking',
         );
         webFallback = appUri;
+      case _DirectionsProvider.apple:
+        // Apple 지도: iOS는 maps:// 딥링크로 앱을 열고(도보 dirflg=w),
+        // 미설치/기타 플랫폼은 https://maps.apple.com 웹으로 폴백한다.
+        appUri = Uri.parse('maps://?daddr=$lat,$lng&dirflg=w');
+        webFallback = Uri.parse(
+          'https://maps.apple.com/?daddr=$lat,$lng&dirflg=w',
+        );
     }
 
     if (await canLaunchUrl(appUri)) {
@@ -200,4 +214,4 @@ class _DirectionsOptionTile extends StatelessWidget {
   }
 }
 
-enum _DirectionsProvider { kakao, naver, google }
+enum _DirectionsProvider { kakao, naver, google, apple }
