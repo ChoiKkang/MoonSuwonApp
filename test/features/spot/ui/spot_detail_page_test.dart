@@ -16,6 +16,12 @@ import 'package:dalbit_suwon/features/spot/data/models/audio_story.dart'
     show AudioStory;
 import 'package:dalbit_suwon/features/spot/data/models/spot_detail.dart'
     show SpotDetail;
+import 'package:dalbit_suwon/features/spot/data/crowd_repository.dart'
+    show CrowdForecastRepository;
+import 'package:dalbit_suwon/features/spot/data/models/crowd_forecast.dart'
+    show CrowdForecast;
+import 'package:dalbit_suwon/features/spot/provider/crowd_provider.dart'
+    show crowdForecastRepositorySupabaseProvider;
 import 'package:dalbit_suwon/features/spot/provider/spot_provider.dart'
     show spotDetailProvider;
 import 'package:dalbit_suwon/features/spot/ui/spot_detail_page.dart'
@@ -39,6 +45,14 @@ class _FakeFavoriteRepository implements FavoriteRepository {
 
   @override
   Future<void> removeAsync(FavoriteTarget target) async {}
+}
+
+/// 예측 혼잡도는 이 테스트의 관심사가 아니므로 항상 비어 있게 두어 섹션을 감추고
+/// Supabase.instance 접근을 막는다.
+class _FakeEmptyCrowdRepo implements CrowdForecastRepository {
+  @override
+  Future<CrowdForecast> fetchCrowdForecastAsync(String placeId) async =>
+      CrowdForecast.empty;
 }
 
 void main() {
@@ -72,6 +86,9 @@ void main() {
           ).overrideWith((ref) async => sparseDetail),
           favoriteRepositoryProvider.overrideWithValue(
             _FakeFavoriteRepository(),
+          ),
+          crowdForecastRepositorySupabaseProvider.overrideWithValue(
+            _FakeEmptyCrowdRepo(),
           ),
         ],
         child: const MaterialApp(home: SpotDetailPage(spotId: 'seojangdae')),
@@ -131,6 +148,9 @@ void main() {
           ).overrideWith((ref) async => richDetail),
           favoriteRepositoryProvider.overrideWithValue(
             _FakeFavoriteRepository(),
+          ),
+          crowdForecastRepositorySupabaseProvider.overrideWithValue(
+            _FakeEmptyCrowdRepo(),
           ),
         ],
         child: const MaterialApp(

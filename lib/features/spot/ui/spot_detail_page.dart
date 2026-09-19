@@ -17,6 +17,8 @@ import 'package:dalbit_suwon/features/spot/ui/widgets/accessibility_section.dart
     show AccessibilitySection;
 import 'package:dalbit_suwon/features/spot/ui/widgets/audio_story_section.dart'
     show AudioStorySection;
+import 'package:dalbit_suwon/features/spot/ui/widgets/crowd_forecast_section.dart'
+    show CrowdForecastSection;
 import 'package:dalbit_suwon/features/spot/ui/widgets/pet_policy_card.dart'
     show PetPolicyCard;
 import 'package:dalbit_suwon/shared/widgets/glass_icon_button.dart'
@@ -125,6 +127,7 @@ class _SpotDetailContent extends StatelessWidget {
                     const SizedBox(height: 16),
                     _RomanticCard(text: detail.romanticMoment),
                   ],
+                  CrowdForecastSection(placeId: detail.id),
                   if (PetPolicyCard.shouldShow(
                     policy: detail.petPolicy,
                     note: detail.petNote,
