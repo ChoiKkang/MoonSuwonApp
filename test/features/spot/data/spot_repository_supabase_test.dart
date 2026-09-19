@@ -204,4 +204,79 @@ void main() {
       }
     },
   );
+
+  test(
+    'uses accessibility/audio embedded in the RPC without extra view queries',
+    () async {
+      // get_place_by_slug 확장(20260919280000) 적용 후: RPC가 access_*와
+      // audio_stories를 함께 주므로 뷰 폴백 조회 없이 단일 RPC로 끝난다.
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final requestPaths = <String>[];
+      final placeJson = <String, dynamic>{
+        'id': 'cebde3c8-ff30-4f16-aaf7-6edffe3ae43b',
+        'slug': 'hwahongmun',
+        'official_name': '화홍문',
+        'lat': 37.2870233,
+        'lng': 127.01722,
+        'display_name': '화홍문',
+        'mission_radius_m': 80,
+        'pet_policy': 'unknown',
+        'access_parking': '장애인 주차 구역 있음',
+        'access_restroom': '장애인 전용 화장실 있음',
+        'access_source_updated_at': '2026-04-01',
+        'audio_stories': [
+          {
+            'story_lang_id': 'odii-hwahongmun-01',
+            'spot_title': '화홍문',
+            'audio_title': '황홀하다 화홍문(북수문)',
+            'script': '과거 북수문 일대에는...',
+            'play_seconds': null,
+            'audio_url': null,
+            'distance_m': 68,
+          },
+        ],
+        'images': [
+          {
+            'id': 'hero',
+            'image_url': 'https://example.com/hwahongmun.jpg',
+            'is_hero': true,
+            'display_order': 0,
+          },
+        ],
+      };
+      final subscription = server.listen((request) async {
+        requestPaths.add(request.uri.path);
+        if (request.method == 'POST') {
+          await utf8.decoder.bind(request).join();
+        }
+        request.response
+          ..statusCode = HttpStatus.ok
+          ..headers.contentType = ContentType.json
+          ..write(jsonEncode(placeJson));
+        await request.response.close();
+      });
+      final client = SupabaseClient(
+        'http://${server.address.host}:${server.port}',
+        'test-publishable-key',
+      );
+
+      try {
+        final detail = await SpotRepositorySupabase(
+          client,
+        ).fetchSpotDetailAsync('hwahongmun');
+
+        expect(detail.accessibility.hasInfo, isTrue);
+        expect(detail.accessibility.parking, '장애인 주차 구역 있음');
+        expect(detail.audioStories, hasLength(1));
+        expect(detail.audioStories.first.audioTitle, '황홀하다 화홍문(북수문)');
+
+        // RPC가 access/audio를 함께 주므로 뷰 폴백 조회를 하지 않는다(단일 RPC).
+        expect(requestPaths, ['/rest/v1/rpc/get_place_by_slug']);
+      } finally {
+        await client.dispose();
+        await subscription.cancel();
+        await server.close(force: true);
+      }
+    },
+  );
 }

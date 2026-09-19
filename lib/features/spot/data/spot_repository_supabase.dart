@@ -31,15 +31,17 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
     }
     final place = PlaceBySlugDto.fromJson(Map<String, dynamic>.from(row as Map));
 
-    // 접근성/오디오 해설은 평면 RPC(get_place_by_slug)가 반환하지 않는다.
-    // 웹과 동일하게 공개 serving 뷰에서 보충 조회한다(place.id 기준). 개별 실패는
-    // 삼켜서(빈 값) 상세 화면 전체가 깨지지 않게 한다.
-    final supplements = await Future.wait([
-      _fetchAccessibilityAsync(place.id),
-      _fetchAudioStoriesAsync(place.id),
-    ]);
-    final viewAccessibility = supplements[0] as AccessibilityFacts;
-    final audioStories = supplements[1] as List<AudioStory>;
+    // access_*/audio_stories는 이제 get_place_by_slug RPC가 함께 반환한다
+    // (마이그레이션 20260919280000). RPC가 값을 주면 단일 RPC로 끝내고, 아직
+    // 마이그레이션 적용 전이라 비어 있으면 공개 뷰로 폴백해 무중단으로 동작한다.
+    var accessibility = place.accessibility;
+    var audioStories = place.audioStories;
+    if (!accessibility.hasInfo) {
+      accessibility = await _fetchAccessibilityAsync(place.id);
+    }
+    if (audioStories.isEmpty) {
+      audioStories = await _fetchAudioStoriesAsync(place.id);
+    }
 
     return SpotDetail(
       id: place.id,
@@ -61,10 +63,7 @@ class SpotRepositorySupabase implements SpotRepository, NowGoodSpotsRepository {
       nearbySpots: const [],
       petPolicy: place.petPolicy ?? 'unknown',
       petNote: place.petNote ?? '',
-      // 뷰에서 얻은 접근성을 우선 사용하고, 없으면 RPC 파싱값(전방호환)로 폴백.
-      accessibility: viewAccessibility.hasInfo
-          ? viewAccessibility
-          : place.accessibility,
+      accessibility: accessibility,
       audioStories: audioStories,
     );
   }

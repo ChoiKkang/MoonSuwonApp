@@ -1,5 +1,7 @@
 import 'package:dalbit_suwon/features/spot/data/models/accessibility_facts.dart'
     show AccessibilityFacts;
+import 'package:dalbit_suwon/features/spot/data/models/audio_story.dart'
+    show AudioStory;
 
 class PlaceBySlugQueryDto {
   const PlaceBySlugQueryDto(this.slug);
@@ -55,6 +57,7 @@ class PlaceBySlugDto {
     this.petPolicy,
     this.petNote,
     this.accessibility = AccessibilityFacts.empty,
+    this.audioStories = const [],
   });
 
   factory PlaceBySlugDto.fromJson(Map<String, dynamic> json) {
@@ -111,6 +114,21 @@ class PlaceBySlugDto {
         etc: json['access_etc'] as String?,
         sourceUpdatedAt: json['access_source_updated_at'] as String?,
       ),
+      audioStories: ((json['audio_stories'] as List<dynamic>?) ?? const [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .map(
+            (m) => AudioStory(
+              id: m['story_lang_id'] as String? ?? '',
+              spotTitle: (m['spot_title'] as String?)?.trim(),
+              audioTitle: (m['audio_title'] as String? ?? '').trim(),
+              script: (m['script'] as String?)?.trim(),
+              playSeconds: (m['play_seconds'] as num?)?.toInt(),
+              audioUrl: (m['audio_url'] as String?)?.trim(),
+              distanceM: (m['distance_m'] as num?)?.toInt(),
+            ),
+          )
+          .where((s) => s.id.isNotEmpty && s.audioTitle.isNotEmpty)
+          .toList(),
     );
   }
 
@@ -139,6 +157,7 @@ class PlaceBySlugDto {
   final String? petPolicy;
   final String? petNote;
   final AccessibilityFacts accessibility;
+  final List<AudioStory> audioStories;
 
   String get heroImageUrl {
     for (final image in images) {
