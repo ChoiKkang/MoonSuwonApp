@@ -58,10 +58,9 @@ void main() {
           {'p_lat': null, 'p_lng': null, 'p_limit': 20},
         ]);
         expect(summaries, hasLength(1));
-        final summary = summaries.single;
-        expect(summary, isA<SpotSummary>());
-        expect(summary.slug, 'banghwasuryujeong');
-        expect(summary.crowdLevel, '여유');
+        expect(summaries.single, isA<SpotSummary>());
+        expect(summaries.single.slug, 'banghwasuryujeong');
+        expect(summaries.single.crowdLevel, '여유');
       } finally {
         await client.dispose();
         await subscription.cancel();
@@ -71,12 +70,10 @@ void main() {
   );
 
   test(
-    'maps spot detail from the RPC and supplements accessibility/audio from views',
+    'maps spot detail (core + pet + accessibility + audio) from a single RPC',
     () async {
-      // Given a loopback endpoint that behaves like PostgREST for three sources:
-      //   - rpc/get_place_by_slug (core fields + pet)
-      //   - v_published_places (access_* columns)
-      //   - v_published_place_audio_stories (audio rows)
+      // get_place_by_slug 확장(20260919280000) 이후: 코어·pet·access_*·audio_stories를
+      // RPC 한 번으로 반환한다. 앱은 뷰 폴백 없이 단일 RPC 결과만으로 상세를 구성한다.
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       final requestPaths = <String>[];
       final placeJson = <String, dynamic>{
@@ -101,6 +98,11 @@ void main() {
         'og_title': '화홍문',
         'og_description': null,
         'og_image_url': null,
+        'pet_policy': 'unknown',
+        'pet_note': null,
+        'access_parking': '장애인 주차 구역 있음',
+        'access_restroom': '장애인 전용 화장실 있음',
+        'access_source_updated_at': '2026-04-01',
         'images': [
           {
             'id': 'hero',
@@ -109,121 +111,6 @@ void main() {
             'display_order': 0,
           },
         ],
-        'pet_policy': 'unknown',
-        'pet_note': null,
-      };
-      final accessObject = <String, dynamic>{
-        'access_parking': '장애인 주차 구역 있음',
-        'access_restroom': '장애인 전용 화장실 있음',
-        'access_source_updated_at': '2026-04-01',
-      };
-      final audioRows = <Map<String, dynamic>>[
-        {
-          'story_lang_id': 'odii-hwahongmun-01',
-          'spot_title': '화홍문',
-          'audio_title': '황홀하다 화홍문(북수문)',
-          'script': '과거 북수문 일대에는 큰 하천이 흐르고 있어서...',
-          'play_seconds': null,
-          'audio_url': null,
-          'distance_m': 68,
-        },
-        {
-          'story_lang_id': 'odii-banghwa-01',
-          'spot_title': '방화수류정',
-          'audio_title': '꽃을 찾는 방화수류정(동북각루)',
-          'script': '화홍문 옆의 언덕에 위치한 동북각루...',
-          'play_seconds': null,
-          'audio_url': null,
-          'distance_m': 90,
-        },
-      ];
-      final subscription = server.listen((request) async {
-        final path = request.uri.path;
-        requestPaths.add(path);
-        if (request.method == 'POST') {
-          await utf8.decoder.bind(request).join();
-        }
-        dynamic data;
-        if (path == '/rest/v1/rpc/get_place_by_slug') {
-          data = placeJson;
-        } else if (path == '/rest/v1/v_published_places') {
-          data = accessObject; // maybeSingle → bare object
-        } else if (path == '/rest/v1/v_published_place_audio_stories') {
-          data = audioRows;
-        } else {
-          data = <dynamic>[];
-        }
-        request.response
-          ..statusCode = HttpStatus.ok
-          ..headers.contentType = ContentType.json
-          ..write(jsonEncode(data));
-        await request.response.close();
-      });
-      final client = SupabaseClient(
-        'http://${server.address.host}:${server.port}',
-        'test-publishable-key',
-      );
-
-      try {
-        final detail = await SpotRepositorySupabase(
-          client,
-        ).fetchSpotDetailAsync('hwahongmun');
-
-        // Core fields come from the RPC.
-        expect(detail, isA<SpotDetail>());
-        expect(detail.name, '화홍문');
-        expect(detail.heroImageUrl, 'https://example.com/hwahongmun.jpg');
-        expect(detail.missionRadiusM, 80);
-        expect(detail.petPolicy, 'unknown');
-
-        // Accessibility comes from v_published_places.
-        expect(detail.accessibility.hasInfo, isTrue);
-        final groupTitles = detail.accessibility.groups.map((g) => g.title);
-        expect(groupTitles, containsAll(<String>['이동과 주차', '현장 편의']));
-        expect(detail.accessibility.parking, '장애인 주차 구역 있음');
-
-        // Audio comes from v_published_place_audio_stories, nearest first.
-        expect(detail.audioStories, hasLength(2));
-        expect(detail.audioStories.first.audioTitle, '황홀하다 화홍문(북수문)');
-        expect(detail.audioStories.first.isReadable, isTrue);
-        expect(detail.audioStories.first.distanceM, 68);
-
-        // All three sources were queried.
-        expect(
-          requestPaths,
-          containsAll(<String>[
-            '/rest/v1/rpc/get_place_by_slug',
-            '/rest/v1/v_published_places',
-            '/rest/v1/v_published_place_audio_stories',
-          ]),
-        );
-      } finally {
-        await client.dispose();
-        await subscription.cancel();
-        await server.close(force: true);
-      }
-    },
-  );
-
-  test(
-    'uses accessibility/audio embedded in the RPC without extra view queries',
-    () async {
-      // get_place_by_slug 확장(20260919280000) 적용 후: RPC가 access_*와
-      // audio_stories를 함께 주므로 뷰 폴백 조회 없이 단일 RPC로 끝난다.
-      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-      final requestPaths = <String>[];
-      final placeJson = <String, dynamic>{
-        'id': 'cebde3c8-ff30-4f16-aaf7-6edffe3ae43b',
-        'slug': 'hwahongmun',
-        'official_name': '화홍문',
-        'lat': 37.2870233,
-        'lng': 127.01722,
-        'display_name': '화홍문',
-        'mission_radius_m': 80,
-        'pet_policy': 'unknown',
-        'access_parking': '장애인 주차 구역 있음',
-        'access_restroom': '장애인 전용 화장실 있음',
-        'access_source_updated_at': '2026-04-01',
         'audio_stories': [
           {
             'story_lang_id': 'odii-hwahongmun-01',
@@ -233,14 +120,6 @@ void main() {
             'play_seconds': null,
             'audio_url': null,
             'distance_m': 68,
-          },
-        ],
-        'images': [
-          {
-            'id': 'hero',
-            'image_url': 'https://example.com/hwahongmun.jpg',
-            'is_hero': true,
-            'display_order': 0,
           },
         ],
       };
@@ -265,12 +144,28 @@ void main() {
           client,
         ).fetchSpotDetailAsync('hwahongmun');
 
+        // 코어 필드.
+        expect(detail, isA<SpotDetail>());
+        expect(detail.name, '화홍문');
+        expect(detail.heroImageUrl, 'https://example.com/hwahongmun.jpg');
+        expect(detail.missionRadiusM, 80);
+        expect(detail.petPolicy, 'unknown');
+
+        // 접근성(access_*).
         expect(detail.accessibility.hasInfo, isTrue);
         expect(detail.accessibility.parking, '장애인 주차 구역 있음');
+        expect(
+          detail.accessibility.groups.map((g) => g.title),
+          containsAll(<String>['이동과 주차', '현장 편의']),
+        );
+
+        // 오디오 해설(audio_stories).
         expect(detail.audioStories, hasLength(1));
         expect(detail.audioStories.first.audioTitle, '황홀하다 화홍문(북수문)');
+        expect(detail.audioStories.first.isReadable, isTrue);
+        expect(detail.audioStories.first.distanceM, 68);
 
-        // RPC가 access/audio를 함께 주므로 뷰 폴백 조회를 하지 않는다(단일 RPC).
+        // 단일 RPC만 호출한다(뷰 폴백 없음).
         expect(requestPaths, ['/rest/v1/rpc/get_place_by_slug']);
       } finally {
         await client.dispose();
