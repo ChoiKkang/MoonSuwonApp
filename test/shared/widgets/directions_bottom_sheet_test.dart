@@ -21,7 +21,7 @@ Widget _harnessApp(void Function(BuildContext) onReady) {
 
 void main() {
   group('DirectionsBottomSheet', () {
-    testWidgets('시트에 카카오/네이버/구글 3개 옵션이 노출된다', (tester) async {
+    testWidgets('시트에 카카오/네이버/구글/Apple 4개 옵션이 노출된다', (tester) async {
       late BuildContext capturedContext;
       await tester.pumpWidget(
         _harnessApp((ctx) => capturedContext = ctx),
@@ -47,6 +47,7 @@ void main() {
       expect(find.text('카카오맵으로 길찾기'), findsOneWidget);
       expect(find.text('네이버맵으로 길찾기'), findsOneWidget);
       expect(find.text('구글맵으로 길찾기'), findsOneWidget);
+      expect(find.text('Apple 지도로 길찾기'), findsOneWidget);
     });
 
     testWidgets('바깥을 탭하면 시트가 닫힌다', (tester) async {

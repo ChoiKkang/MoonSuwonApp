@@ -2,7 +2,7 @@ name: dalbit_suwon
 description: "수원화성 야간 데이트 코스 앱 — 달빛수원"
 publish_to: 'none'
 
-version: 1.0.0+3
+version: 1.0.0+5
 
 environment:
   sdk: ^3.12.1
